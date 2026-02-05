@@ -1,0 +1,28 @@
+{{- if .Values.app.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  {{- if .Values.global.namespace }}
+  namespace: {{ .Values.global.namespace }}
+  {{- end }}
+  labels:
+    {{- include "tech-challange-wherehouse-service.labels" . | nindent 4 }}
+data:
+  DB_HOST: {{ .Values.app.env.DB_HOST | default "" | quote }}
+  DB_PORT: {{ .Values.app.env.DB_PORT | default "5432" | quote }}
+  DB_NAME: {{ .Values.app.env.DB_NAME | default "tech_challenge_db" | quote }}
+  DB_USER: {{ .Values.app.env.DB_USER | default "techmaster" | quote }}
+  DB_SSLMODE: {{ .Values.app.env.DB_SSLMODE | default "disable" | quote }}
+  PORT: {{ .Values.app.env.PORT | default "8080" | quote }}
+  GIN_MODE: {{ .Values.app.env.GIN_MODE | default "release" | quote }}
+  NEW_RELIC_APP_NAME: {{ .Values.app.env.NEW_RELIC_APP_NAME | default "tech-challenge-app-1" | quote }}
+  AUTH_LAMBDA_HOST: {{ .Values.app.auth.lambda_host | quote }}
+  TRACE_SERVICE_VERSION: {{ .Values.app.env.TRACE_SERVICE_VERSION | default "1.0.0" | quote }}
+  TRACE_SERVICE_NAME: {{ .Values.app.env.TRACE_SERVICE_NAME | default "tech-service" | quote }}
+  OTEL_EXPORTER_OTLP_ENDPOINT: {{ .Values.app.env.OTEL_EXPORTER_OTLP_ENDPOINT | default "http://localhost:4318" | quote }}
+  OTEL_METRICS_EXPORT: {{ .Values.app.env.OTEL_METRICS_EXPORT | default "otlp" | quote }}
+  EMAIL_SENDER_NAME: {{ .Values.app.env.EMAIL_SENDER_NAME | default "Tech Challenge Project" | quote }}
+  EMAIL_SENDER_EMAIL: {{ .Values.app.env.EMAIL_SENDER_EMAIL | default "MS_OpILU7@test-2p0347z2r3ylzdrn.mlsender.net" | quote }}
+  SWAGGER_BASE_PATH: {{ .Values.app.env.SWAGGER_BASE_PATH | default "/v1" | quote }}
+{{- end }}

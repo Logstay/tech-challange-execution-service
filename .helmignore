@@ -1,0 +1,16 @@
+docs/
+test/
+*.md
+README.md
+Makefile
+go.mod
+go.sum
+coverage.out
+infra/
+configs/local/
+.git/
+.github/
+cmd/
+internal/
+pkg/
+sonar-project.properties

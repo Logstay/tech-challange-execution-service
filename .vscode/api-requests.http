@@ -1,0 +1,146 @@
+### 🚀 Tech Challenge Backend - API Requests
+### Documentação interativa: http://localhost:8080/docs/index.html
+
+@baseUrl = http://localhost:8080
+@contentType = application/json
+
+### 🔐 Authentication - Login
+POST {{baseUrl}}/api/login
+Content-Type: {{contentType}}
+
+{
+  "username": "admin",
+  "password": "password"
+}
+
+### 🔗 Set Authorization Token (copie o token do response acima)
+@authToken = {{login.response.body.token}}
+
+### 👥 Customers - Listar todos os clientes
+GET {{baseUrl}}/api/clientes
+Authorization: Bearer {{authToken}}
+
+### 👥 Customers - Criar novo cliente
+POST {{baseUrl}}/api/clientes
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "name": "João Silva",
+  "email": "joao.silva@email.com",
+  "phone": "(11) 99999-9999",
+  "document": "123.456.789-00",
+  "address": {
+    "street": "Rua das Flores, 123",
+    "city": "São Paulo",
+    "state": "SP",
+    "zipCode": "01234-567"
+  }
+}
+
+### 🚗 Vehicles - Listar todos os veículos
+GET {{baseUrl}}/api/veiculos
+Authorization: Bearer {{authToken}}
+
+### 🚗 Vehicles - Criar novo veículo
+POST {{baseUrl}}/api/veiculos
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "costumer_id": "{{customer_id}}",
+  "brand": "Toyota",
+  "model": "Corolla",
+  "year": 2020,
+  "license_plate": "ABC-1234",
+  "color": "Prata",
+  "engine": "1.8 Flex"
+}
+
+### 📦 Consumables - Listar consumíveis
+GET {{baseUrl}}/api/consumables
+Authorization: Bearer {{authToken}}
+
+### 📦 Consumables - Criar consumível
+POST {{baseUrl}}/api/consumables
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "name": "Óleo Motor 5W30",
+  "description": "Óleo mineral para motores flex",
+  "unit": "L",
+  "unit_price": 25.90,
+  "category": "Lubrificantes"
+}
+
+### 🔧 Service Definitions - Listar serviços
+GET {{baseUrl}}/api/service-definitions
+Authorization: Bearer {{authToken}}
+
+### 🔧 Service Definitions - Criar definição de serviço
+POST {{baseUrl}}/api/service-definitions
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "name": "Troca de Óleo",
+  "description": "Troca completa do óleo do motor",
+  "estimated_duration_minutes": 30,
+  "price": 80.00,
+  "category": "Manutenção Preventiva"
+}
+
+### 📋 Work Orders - Listar ordens de serviço
+GET {{baseUrl}}/api/work-orders
+Authorization: Bearer {{authToken}}
+
+### 📋 Work Orders - Criar ordem de serviço
+POST {{baseUrl}}/api/work-orders
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "costumer_id": "{{customer_id}}",
+  "vehicle_id": "{{vehicle_id}}",
+  "description": "Manutenção preventiva completa",
+  "services": [
+    {
+      "service_definition_id": "{{service_id}}",
+      "quantity": 1,
+      "notes": "Usar óleo 5W30"
+    }
+  ],
+  "consumables": [
+    {
+      "consumable_id": "{{consumable_id}}",
+      "quantity": 4,
+      "unit_price": 25.90
+    }
+  ]
+}
+
+### 📋 Work Orders - Consultar ordem específica
+GET {{baseUrl}}/api/work-orders/{{work_order_id}}
+Authorization: Bearer {{authToken}}
+
+### 📊 Health Check
+GET {{baseUrl}}/health
+
+### 📚 API Documentation (Swagger)
+GET {{baseUrl}}/docs/swagger.json
+
+### 🔍 Observability - Metrics
+# Verificar se métricas estão sendo coletadas (se habilitado)
+GET {{baseUrl}}/metrics
+Authorization: Bearer {{authToken}}
+
+### 🧪 Environment Variables for Testing
+# Local Development
+# baseUrl: http://localhost:8080
+
+# Docker Environment
+# baseUrl: http://localhost:8080
+
+# Staging/Production
+# baseUrl: https://your-staging-api.com

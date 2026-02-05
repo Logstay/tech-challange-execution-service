@@ -1,0 +1,109 @@
+global:
+  namespace: "" # Will be set dynamically by pipeline
+  environment: "production" # Can be overridden per environment
+
+app:
+  enabled: true
+  name: tech-challange-wherehouse-service
+  image:
+    repository: ""
+    tag: "latest"
+    pullPolicy: IfNotPresent
+
+  replicaCount: 1
+
+  containerPort: 8080
+
+  # Environment variables with defaults in templates
+  env: {}
+    # DB_HOST: (set externally)
+    # DB_PORT: "5432" (default in template)
+    # DB_NAME: tech_challenge_db (default in template)
+    # DB_USER: techmaster (default in template)
+    # PORT: "8080" (default in template)
+    # GIN_MODE: release (default in template)
+    # TRACE_SERVICE_VERSION: "1.0.0" (default in template)
+    # TRACE_SERVICE_NAME: "tech-service" (default in template)
+    # OTEL_EXPORTER_OTLP_ENDPOINT: "http://localhost:4318" (default in template)
+    # OTEL_METRICS_EXPORT: "otlp" (default in template)
+    # EMAIL_SENDER_NAME: "Tech Challenge Project" (default in template)
+    # EMAIL_SENDER_EMAIL: (set via pipeline)
+    # EMAIL_API_KEY: (set via pipeline)
+    # NEW_RELIC_APP_NAME: "tech-challenge-app-1" (default in template)
+    # SWAGGER_BASE_PATH: "/v1" (default in template) - use "/Prod/v1" for API Gateway
+
+  # Secrets with defaults in templates
+  secrets: {}
+    # DB_PASSWORD: techmaster01 (default in template)
+    # JWT_SECRET: your-default-jwt-secret-change-me (default in template)
+
+  database:
+    pool_min: 1
+    pool_max: 10
+
+  auth:
+    lambda_host: "" # Set via pipeline or values override - Lambda Auth API URL
+
+  email:
+    api_key: "" # Set via pipeline or values override
+    sender_name: "Tech Challenge Project"
+    sender_email: "" # Set via pipeline or values override
+
+  logging:
+    level: "info"
+
+  probes:
+    readiness:
+      httpGet:
+        path: /v1/health
+        port: 8080
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    liveness:
+      httpGet:
+        path: /v1/health
+        port: 8080
+      initialDelaySeconds: 60
+      periodSeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 3
+
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "128Mi"
+    limits:
+      cpu: "100m"
+      memory: "256Mi"
+
+service:
+  type: LoadBalancer
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+  port: 80
+  targetPort: 8080
+  protocol: TCP
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

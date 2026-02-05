@@ -1,0 +1,122 @@
+package initialize
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/Logstay/tech-challange-wherehouse-service/config"
+	app "github.com/Logstay/tech-challange-wherehouse-service/internal"
+	cPorts "github.com/Logstay/tech-challange-wherehouse-service/internal/ports/cache"
+	"github.com/Logstay/tech-challange-wherehouse-service/pkg/cache"
+	"github.com/Logstay/tech-challange-wherehouse-service/pkg/constant"
+	"github.com/Logstay/tech-challange-wherehouse-service/pkg/tracing"
+	"github.com/newrelic/go-agent/v3/newrelic"
+)
+
+type Application struct {
+	Config          *config.Config
+	TracingProvider *tracing.Provider
+	Cache           cPorts.Cache
+	ServiceFactory  *app.ServiceFactory
+	NewRelicApp     *newrelic.Application
+	Context         context.Context
+}
+
+func Setup(ctx context.Context) (*Application, error) {
+	appInstance := &Application{
+		Context: ctx,
+	}
+
+	if err := appInstance.loadConfig(); err != nil {
+		return nil, fmt.Errorf("falha ao carregar configurações: %w", err)
+	}
+
+	if err := appInstance.initNewRelic(); err != nil {
+		appInstance.Config.Logger.Error("Erro ao inicializar New Relic (continuando sem ele)", err)
+	}
+
+	if err := appInstance.initTracing(); err != nil {
+		appInstance.Config.Logger.Error("Erro ao inicializar tracing provider (continuando sem ele)", err)
+	}
+
+	if err := appInstance.initCache(); err != nil {
+		return nil, fmt.Errorf("falha ao inicializar cache: %w", err)
+	}
+
+	appInstance.prepareContext()
+
+	appInstance.initServiceFactory()
+
+	appInstance.Config.Logger.Info("Bootstrap concluído com sucesso")
+
+	return appInstance, nil
+}
+
+func (a *Application) loadConfig() error {
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		return err
+	}
+	a.Config = cfg
+	return nil
+}
+
+func (a *Application) initNewRelic() error {
+	if a.Config.NewRelic.LicenseKey == "" {
+		return fmt.Errorf("New Relic license key não configurada")
+	}
+
+	nrApp, err := newrelic.NewApplication(
+		newrelic.ConfigAppName(a.Config.NewRelic.AppName),
+		newrelic.ConfigLicense(a.Config.NewRelic.LicenseKey),
+		newrelic.ConfigAppLogForwardingEnabled(true),
+		newrelic.ConfigDistributedTracerEnabled(true),
+	)
+	if err != nil {
+		return err
+	}
+
+	a.NewRelicApp = nrApp
+	return nil
+}
+
+func (a *Application) initTracing() error {
+	tracingProvider, err := tracing.NewTracingProvider(a.Config)
+	if err != nil {
+		return err
+	}
+	a.TracingProvider = tracingProvider
+	return nil
+}
+
+func (a *Application) initCache() error {
+	a.Cache = cache.NewMemoryCache()
+	return nil
+}
+
+func (a *Application) prepareContext() {
+	a.Context = context.WithValue(a.Context, constant.TransactionName("logger"), a.Config.Logger)
+}
+
+func (a *Application) initServiceFactory() {
+	a.ServiceFactory = app.NewServiceFactory(
+		a.TracingProvider,
+		a.Config,
+		a.Cache,
+	)
+}
+
+func (a *Application) Shutdown(ctx context.Context) error {
+	a.Config.Logger.Info("Iniciando shutdown da aplicação...")
+
+	if a.TracingProvider != nil {
+		a.TracingProvider.Close(ctx)
+	}
+
+	if a.Cache != nil {
+		a.Cache.Close()
+	}
+
+	a.Config.Logger.Info("Shutdown concluído")
+	return nil
+}

@@ -1,0 +1,106 @@
+{
+  "go.testFlags": [
+    "-v",
+    "-race"
+  ],
+  "go.testTimeout": "30s",
+  "go.coverOnSave": false,
+  "go.coverOnSingleTest": true,
+  "go.coverageDecorator": {
+    "type": "gutter",
+    "coveredHighlightColor": "rgba(64,128,64,0.5)",
+    "uncoveredHighlightColor": "rgba(128,64,64,0.25)",
+    "coveredGutterStyle": "blockgreen",
+    "uncoveredGutterStyle": "blockred"
+  },
+  "go.lintOnSave": "package",
+  "go.lintTool": "golangci-lint",
+  "go.lintFlags": [
+    "--fast"
+  ],
+  "go.formatTool": "goimports",
+  "go.useLanguageServer": true,
+  "go.toolsManagement.autoUpdate": true,
+  "go.buildOnSave": "off",
+  "go.vetOnSave": "off",
+  "go.testOnSave": false,
+  "go.delveConfig": {
+    "dlvLoadConfig": {
+      "followPointers": true,
+      "maxVariableRecurse": 1,
+      "maxStringLen": 64,
+      "maxArrayValues": 64,
+      "maxStructFields": -1
+    },
+    "apiVersion": 2,
+    "showGlobalVariables": false
+  },
+  "files.associations": {
+    "*.yaml": "yaml",
+    "*.yml": "yaml",
+    "docker-compose*.yaml": "dockercompose",
+    "docker-compose*.yml": "dockercompose",
+    "Dockerfile*": "dockerfile",
+    "*.mod": "go.mod",
+    "*.sum": "go.sum"
+  },
+  "files.exclude": {
+    "**/bin": true,
+    "**/coverage.out": true,
+    "**/.scannerwork": true,
+    "**/vendor": true
+  },
+  "docker.defaultRegistryPath": "kaique",
+  "yaml.schemas": {
+    "https://json.schemastore.org/docker-compose.json": [
+      "docker-compose*.yaml",
+      "docker-compose*.yml"
+    ]
+  },
+  "rest-client.environmentVariables": {
+    "local": {
+      "baseUrl": "http://localhost:8080",
+      "authToken": ""
+    },
+    "dev": {
+      "baseUrl": "https://dev-api.example.com",
+      "authToken": ""
+    }
+  },
+  "terminal.integrated.defaultProfile.linux": "zsh",
+  "terminal.integrated.profiles.linux": {
+    "zsh": {
+      "path": "/bin/zsh"
+    }
+  },
+  "workbench.colorCustomizations": {
+    "terminal.ansiGreen": "#00ff00",
+    "terminal.ansiRed": "#ff0000",
+    "terminal.ansiYellow": "#ffff00"
+  },
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "[go]": {
+    "editor.insertSpaces": false,
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  "[yaml]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.autoIndent": "advanced"
+  },
+  "[dockerfile]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-containers"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  }
+}

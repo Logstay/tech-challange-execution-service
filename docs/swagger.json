@@ -1,0 +1,266 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/health": {
+            "get": {
+                "description": "Verifica o status de saúde do serviço de cobrança",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "🔧 Sistema"
+                ],
+                "summary": "🏥 Health Check",
+                "responses": {
+                    "200": {
+                        "description": "Serviço funcionando corretamente",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/payments/card": {
+            "post": {
+                "description": "Cria um pagamento com cartão de crédito via Mercado Pago. Retorna o status do pagamento imediatamente (aprovado ou rejeitado). Para ambiente de teste, use os cartões de teste fornecidos na documentação.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "💰 Pagamentos"
+                ],
+                "summary": "💳 Criar Pagamento com Cartão de Crédito",
+                "parameters": [
+                    {
+                        "description": "Dados do pagamento com cartão",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.CardPaymentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Pagamento processado com sucesso",
+                        "schema": {
+                            "$ref": "#/definitions/http.CardPaymentResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Requisição inválida",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "errors.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 400
+                },
+                "error": {
+                    "type": "string",
+                    "example": "Descrição do erro"
+                }
+            }
+        },
+        "http.BodyCard": {
+            "type": "object",
+            "properties": {
+                "card_number": {
+                    "type": "string",
+                    "example": "4235647728025682"
+                },
+                "cardholder": {
+                    "$ref": "#/definitions/http.Cardholder"
+                },
+                "expiration_month": {
+                    "type": "string",
+                    "example": "11"
+                },
+                "expiration_year": {
+                    "type": "string",
+                    "example": "2030"
+                },
+                "security_code": {
+                    "type": "string",
+                    "example": "123"
+                },
+                "site_id": {
+                    "type": "string",
+                    "example": "MLB"
+                }
+            }
+        },
+        "http.CardInfo": {
+            "type": "object",
+            "properties": {
+                "first_six_digits": {
+                    "type": "string",
+                    "example": "450995"
+                },
+                "last_four_digits": {
+                    "type": "string",
+                    "example": "3704"
+                }
+            }
+        },
+        "http.CardPayerRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "customer@example.com"
+                },
+                "identification": {
+                    "$ref": "#/definitions/http.IdentificationRequest"
+                }
+            }
+        },
+        "http.CardPaymentRequest": {
+            "type": "object",
+            "properties": {
+                "card_details": {
+                    "$ref": "#/definitions/http.BodyCard"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Pagamento de serviço automotivo"
+                },
+                "external_reference": {
+                    "type": "string",
+                    "example": "ORDER-12345"
+                },
+                "installments": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "notification_url": {
+                    "type": "string",
+                    "example": "https://seu-dominio.com/webhook/mercadopago"
+                },
+                "payer": {
+                    "$ref": "#/definitions/http.CardPayerRequest"
+                },
+                "payment_method_id": {
+                    "type": "string",
+                    "example": "visa"
+                },
+                "token": {
+                    "type": "string",
+                    "example": "ea1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+                },
+                "transaction_amount": {
+                    "type": "number",
+                    "example": 100
+                }
+            }
+        },
+        "http.CardPaymentResponse": {
+            "type": "object",
+            "properties": {
+                "card": {
+                    "$ref": "#/definitions/http.CardInfo"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Pagamento de serviço automotivo"
+                },
+                "external_reference": {
+                    "type": "string",
+                    "example": "ORDER-12345"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 123456789
+                },
+                "installments": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "payment_method_id": {
+                    "type": "string",
+                    "example": "visa"
+                },
+                "payment_type_id": {
+                    "type": "string",
+                    "example": "credit_card"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "approved"
+                },
+                "status_detail": {
+                    "type": "string",
+                    "example": "accredited"
+                },
+                "transaction_amount": {
+                    "type": "number",
+                    "example": 100
+                }
+            }
+        },
+        "http.Cardholder": {
+            "type": "object",
+            "properties": {
+                "identification": {
+                    "$ref": "#/definitions/http.Identification"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "APRO"
+                }
+            }
+        },
+        "http.Identification": {
+            "type": "object",
+            "properties": {
+                "number": {
+                    "type": "string",
+                    "example": "12345678909"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "CPF"
+                }
+            }
+        },
+        "http.IdentificationRequest": {
+            "type": "object",
+            "properties": {
+                "number": {
+                    "type": "string",
+                    "example": "12345678909"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "CPF"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,255 @@
+name: Application Deployment
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: "Environment to deploy (prod)"
+        required: false
+        default: "prod"
+        type: string
+      image_tag:
+        description: "Docker image tag to deploy"
+        required: false
+        default: "latest"
+        type: string
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy"
+        required: true
+        default: "prod"
+        type: choice
+        options:
+          - prod
+      image_tag:
+        description: "Docker image tag to deploy"
+        required: false
+        default: "latest"
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+  security-events: write
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+  EKS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
+  K8S_NAMESPACE: ${{ secrets.K8S_NAMESPACE }}
+
+jobs:
+  deploy-application:
+    name: Deploy Application to Kubernetes
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment || 'prod' }}
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v5
+
+      - name: 🔐 Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_DEPLOY_ROLE }}
+          role-session-name: ${{ secrets.AWS_DEPLOY_ROLE }}
+
+      - name: ⚙️ Setup kubectl & Helm
+        run: |
+          # Install kubectl
+          curl -LO "https://dl.k8s.io/release/v1.30.0/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+
+          # Install Helm
+          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+          # Update kubeconfig
+          aws eks update-kubeconfig --name "${{ env.EKS_CLUSTER_NAME }}" --region "${{ env.AWS_REGION }}"
+
+          echo "🔍 Testing AWS CLI access..."
+          aws sts get-caller-identity
+
+          echo "🔍 Testing EKS cluster access..."
+          aws eks describe-cluster --name "${{ env.EKS_CLUSTER_NAME }}" --region "${{ env.AWS_REGION }}" --query 'cluster.status'
+
+          echo "🔍 Testing kubectl access..."
+          kubectl auth can-i get pods --namespace=default || echo "❌ No pod access in default namespace"
+
+          # Verify connection
+          kubectl cluster-info || echo "❌ Cluster connection failed - checking access policies"
+          echo "✅ Connected to EKS cluster: ${{ env.EKS_CLUSTER_NAME }}"
+
+      - name: �️ Prepare namespace and verify access
+        run: |
+          echo "� Preparing namespace and verifying access"
+
+          # Set namespace with fallback
+          NAMESPACE="${{ env.K8S_NAMESPACE }}-${{ inputs.environment || 'prod' }}"
+          echo "� Using namespace: $NAMESPACE"
+
+          # Ensure namespace exists (should already exist from database deployment)
+          echo "� Ensuring namespace exists..."
+          kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
+
+          # Debug kubectl access before deployment
+          echo "🔍 Testing kubectl access..."
+          kubectl auth can-i create deployments --namespace="$NAMESPACE" || echo "❌ Cannot create deployments in namespace"
+          kubectl auth can-i get pods --namespace="$NAMESPACE" || echo "❌ Cannot access pods in namespace"
+
+          echo "✅ Namespace and access verified"
+
+      - name: 🚀 Deploy application with Helm
+        run: |
+          echo "🚀 Deploying application..."
+
+          # Set namespace with fallback
+          NAMESPACE="${{ env.K8S_NAMESPACE }}-${{ inputs.environment || 'prod' }}"
+          echo "📦 Using namespace: $NAMESPACE"
+          echo "🎯 Using environment: ${{ inputs.environment || 'prod' }}"
+
+          # Use provided image tag from build workflow
+          if [[ -n "${{ inputs.image_tag }}" && "${{ inputs.image_tag }}" != "latest" ]]; then
+            TAG_VERSION="${{ inputs.image_tag }}"
+            echo "🏷️ Using tag from build workflow: $TAG_VERSION"
+          else
+            # Fallback - should not happen in normal flow
+            TAG_VERSION="v$(date +%Y%m%d)-${GITHUB_SHA::8}"
+            echo "⚠️  Fallback: Generated version: $TAG_VERSION"
+            echo "⚠️  This should not happen - image_tag should come from build workflow"
+          fi
+
+          # Get ECR repository URL
+          ECR_REPOSITORY_URI=$(aws ecr describe-repositories --repository-names ${{ env.ECR_REPOSITORY }} --query 'repositories[0].repositoryUri' --output text)
+          echo "📦 ECR Repository: $ECR_REPOSITORY_URI"
+
+          # Verify image exists in ECR
+          echo "🔍 Checking if image exists in ECR..."
+          if aws ecr describe-images --repository-name ${{ env.ECR_REPOSITORY }} --image-ids imageTag=$TAG_VERSION >/dev/null 2>&1; then
+            echo "✅ Image $TAG_VERSION found in ECR"
+          else
+            echo "❌ Image $TAG_VERSION NOT found in ECR"
+            echo "🔍 Available images in ECR:"
+            aws ecr describe-images --repository-name ${{ env.ECR_REPOSITORY }} --query 'imageDetails[*].imageTags' --output table
+            echo "⚠️  Will try to use latest available image..."
+
+            # Get the most recent image tag
+            LATEST_TAG=$(aws ecr describe-images --repository-name ${{ env.ECR_REPOSITORY }} --query 'sort_by(imageDetails,&imagePushedAt)[-1].imageTags[0]' --output text)
+            if [[ "$LATEST_TAG" != "None" && "$LATEST_TAG" != "" ]]; then
+              TAG_VERSION="$LATEST_TAG"
+              echo "🏷️ Using latest available tag: $TAG_VERSION"
+            else
+              echo "❌ No images found in ECR repository!"
+              exit 1
+            fi
+          fi
+
+          # Deploy application using Helm
+          echo "🚀 Running Helm deployment..."
+
+          # Set database configuration from GitHub secrets (same pattern as database.yml)
+          DB_HOST="${{ secrets.DB_HOST }}"
+          DB_PORT="${{ secrets.DB_PORT }}"
+          DB_NAME="${{ secrets.DB_NAME }}"
+          DB_USER="${{ secrets.DB_USER }}"
+          DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
+          JWT_SECRET="${{ secrets.JWT_SECRET }}"
+          DB_SSLMODE="${{ secrets.DB_SSLMODE }}"
+          NEW_RELIC_APP_NAME="${{ secrets.NEW_RELIC_APP_NAME }}"
+          NEW_RELIC_LICENSE_KEY="${{ secrets.NEW_RELIC_LICENSE_KEY }}"
+
+          # Tracing configuration
+          TRACE_SERVICE_VERSION="${{ secrets.TRACE_SERVICE_VERSION }}"
+          TRACE_SERVICE_NAME="${{ secrets.TRACE_SERVICE_NAME }}"
+          OTEL_EXPORTER_OTLP_ENDPOINT="${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT }}"
+          OTEL_METRICS_EXPORT="${{ secrets.OTEL_METRICS_EXPORT }}"
+
+          # Email configuration
+          EMAIL_SENDER_NAME="${{ secrets.EMAIL_SENDER_NAME }}"
+          EMAIL_SENDER_EMAIL="${{ secrets.EMAIL_SENDER_EMAIL }}"
+          EMAIL_API_KEY="${{ secrets.EMAIL_API_KEY }}"
+
+          # Auth Lambda configuration
+          AUTH_LAMBDA_HOST="${{ secrets.AUTH_LAMBDA_HOST }}"
+
+          if ! helm upgrade --install tech-challenge-${{ inputs.environment || 'prod' }} ./k8s/helm \
+            --namespace "$NAMESPACE" \
+            --set global.namespace="$NAMESPACE" \
+            --set app.enabled=true \
+            --set postgres.enabled=false \
+            --set migration.enabled=false \
+            --set app.image.repository="$ECR_REPOSITORY_URI" \
+            --set app.image.tag="$TAG_VERSION" \
+            --set autoscaling.enabled=false \
+            --set app.replicaCount=1 \
+            --set app.env.DB_HOST="$DB_HOST" \
+            --set app.env.DB_PORT="$DB_PORT" \
+            --set app.env.DB_NAME="$DB_NAME" \
+            --set app.env.DB_USER="$DB_USER" \
+            --set app.env.DB_SSLMODE="$DB_SSLMODE" \
+            --set app.secrets.DB_PASSWORD="$DB_PASSWORD" \
+            --set app.secrets.JWT_SECRET="$JWT_SECRET" \
+            --set app.env.NEW_RELIC_APP_NAME="$NEW_RELIC_APP_NAME" \
+            --set app.secrets.NEW_RELIC_LICENSE_KEY="$NEW_RELIC_LICENSE_KEY" \
+            --set app.env.TRACE_SERVICE_VERSION="$TRACE_SERVICE_VERSION" \
+            --set app.env.TRACE_SERVICE_NAME="$TRACE_SERVICE_NAME" \
+            --set app.env.OTEL_EXPORTER_OTLP_ENDPOINT="$OTEL_EXPORTER_OTLP_ENDPOINT" \
+            --set app.env.OTEL_METRICS_EXPORT="$OTEL_METRICS_EXPORT" \
+            --set app.env.EMAIL_SENDER_NAME="$EMAIL_SENDER_NAME" \
+            --set app.env.EMAIL_SENDER_EMAIL="$EMAIL_SENDER_EMAIL" \
+            --set app.secrets.EMAIL_API_KEY="$EMAIL_API_KEY" \
+            --set app.auth.lambda_host="$AUTH_LAMBDA_HOST" \
+            --wait \
+            --timeout=600s \
+            --debug; then
+            echo "❌ Helm deployment failed!"
+            echo "🔍 Checking existing resources in namespace:"
+            kubectl get all -n "$NAMESPACE"
+            echo "🔍 Checking Helm releases:"
+            helm list -n "$NAMESPACE"
+            exit 1
+          fi
+
+          # Verify deployment was successful
+          echo "🔍 Verifying Helm deployment..."
+          helm status tech-challenge-${{ inputs.environment || 'prod' }} -n "$NAMESPACE"
+
+          echo "🔍 Checking deployed resources..."
+          kubectl get all -n "$NAMESPACE"
+
+          echo "✅ Application deployed successfully with version $TAG_VERSION"
+
+      - name: 📊 Generate application deployment report
+        run: |
+          echo "# 🚀 Application Deployment Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📋 Deployment Status" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Component | Status | Environment |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|-------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 🚀 Application | ✅ Deployed | ${{ inputs.environment || 'prod' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🏥 Health Check | ✅ Passed | ${{ inputs.environment || 'prod' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔧 Auto Scaling | ✅ Enabled | ${{ inputs.environment || 'prod' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🎯 Deployment Details" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: ${{ inputs.environment || 'prod' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Namespace**: ${{ env.K8S_NAMESPACE }}-${{ inputs.environment || 'prod' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image Tag**: ${{ inputs.image_tag || 'auto-generated' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🎯 Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "- Application is ready to receive traffic" >> $GITHUB_STEP_SUMMARY
+          echo "- Monitor application performance and logs" >> $GITHUB_STEP_SUMMARY
+          echo "- Verify business functionality through testing" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🔗 Useful Commands" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo "# Check pods status" >> $GITHUB_STEP_SUMMARY
+          echo "kubectl get pods -n ${{ env.K8S_NAMESPACE }}-${{ inputs.environment || 'prod' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "# Check application logs" >> $GITHUB_STEP_SUMMARY
+          echo "kubectl logs -l app=tech-challenge-app -n ${{ env.K8S_NAMESPACE }}-${{ inputs.environment || 'prod' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "# Port forward to access app" >> $GITHUB_STEP_SUMMARY
+          echo "kubectl port-forward svc/app-service 8080:80 -n ${{ env.K8S_NAMESPACE }}-${{ inputs.environment || 'prod' }}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY

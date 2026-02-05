@@ -1,0 +1,146 @@
+package null
+
+import (
+	"database/sql/driver"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"time"
+)
+
+const (
+	DDMMYYYY = "02/01/2006"
+)
+
+type Date struct {
+	Date  time.Time
+	Valid bool
+}
+
+func DateFrom(src string) Date {
+	date, err := time.Parse(DDMMYYYY, src)
+	if err != nil {
+		return Date{Date: time.Now(), Valid: false}
+	}
+
+	return NewDate(date)
+}
+
+func NewDate(date time.Time) Date {
+	return Date{
+		Date:  time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC),
+		Valid: true,
+	}
+}
+
+func (n *Date) Scan(value any) error {
+	n.Date, n.Valid = value.(time.Time)
+	return nil
+}
+
+func (n *Date) Value() (resp driver.Value, err error) {
+	if !n.Valid {
+		return
+	}
+	return n.Date, nil
+}
+
+func (n *Date) MarshalJSON() ([]byte, error) {
+	if !n.Valid {
+		return []byte("null"), nil
+	}
+
+	t := n.Date
+
+	if y := t.Year(); y < 0 || y >= 10000 {
+		return nil, errors.New("Date.MarshalJSON: year outside of range [0,9999]")
+	}
+
+	value := t.Format(DDMMYYYY)
+	bytes := []byte(fmt.Sprintf("\"%s\"", value))
+	return bytes, nil
+}
+
+func (n *Date) UnmarshalJSON(data []byte) (err error) {
+	type dateDecode struct {
+		Date  string
+		Valid bool
+	}
+
+	if string(data) == "" || string(data) == null {
+		n.Date = time.Time{}
+		n.Valid = false
+		err = nil
+		return
+	}
+
+	var decode dateDecode
+	err = json.Unmarshal(data, &decode.Date)
+	if err != nil {
+		return err
+	}
+
+	n.Date, err = time.Parse(DDMMYYYY, decode.Date)
+	n.Valid = decode.Valid
+	n.Valid = err == nil
+	return
+}
+
+func (n *Date) UnmarshalText(text []byte) error {
+	str := string(text)
+	if str == "" || str == null {
+		n.Valid = false
+		return nil
+	}
+
+	var err error
+	n.Date, err = time.Parse(DDMMYYYY, str)
+	n.Valid = err == nil
+	return err
+}
+
+func (n *Date) MarshalText() ([]byte, error) {
+	if !n.Valid {
+		return []byte{}, nil
+	}
+
+	t := n.Date
+
+	if y := t.Year(); y < 0 || y >= 10000 {
+		return nil, errors.New("Date.MarshalJSON: year outside of range [0,9999]")
+	}
+
+	return []byte(t.Format(DDMMYYYY)), nil
+}
+
+func (d *Date) IsZero() bool {
+	return !d.Valid
+}
+
+func (d *Date) Equal(that *Date) bool {
+	return d.Date.Equal(that.Date)
+}
+
+func (d *Date) Before(that *Date) bool {
+	return d.Date.Before(that.Date)
+}
+
+func (d *Date) After(that *Date) bool {
+	return d.Date.After(that.Date)
+}
+
+func (d *Date) String() string {
+	bytes, err := d.MarshalText()
+	if err != nil {
+		return ""
+	}
+
+	return string(bytes)
+}
+
+func (d *Date) Ptr() *time.Time {
+	if !d.Valid {
+		return nil
+	}
+	return &d.Date
+}

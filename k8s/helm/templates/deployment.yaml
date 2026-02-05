@@ -1,0 +1,162 @@
+{{- if .Values.app.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.app.name }}
+  {{- if .Values.global.namespace }}
+  namespace: {{ .Values.global.namespace }}
+  {{- end }}
+  labels:
+    {{- include "tech-challange-wherehouse-service.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.app.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "tech-challange-wherehouse-service.appSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "tech-challange-wherehouse-service.appSelectorLabels" . | nindent 8 }}
+        version: v1
+      annotations:
+        timestamp: {{ now | quote }}
+    spec:
+      containers:
+      - name: {{ .Values.app.name }}
+        image: "{{ .Values.app.image.repository }}:{{ .Values.app.image.tag }}"
+        imagePullPolicy: {{ .Values.app.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.app.containerPort }}
+          name: http
+        env:
+        # Database Configuration
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DB_HOST
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DB_PORT
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DB_NAME
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: DB_PASSWORD
+        - name: DB_SSLMODE
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DB_SSLMODE
+        - name: POOL_MIN
+          value: "{{ .Values.app.database.pool_min | default 1 }}"
+        - name: POOL_MAX
+          value: "{{ .Values.app.database.pool_max | default 10 }}"
+
+        # Server Configuration
+        - name: REST_SERVER_HOST
+          value: "0.0.0.0"
+        - name: REST_SERVER_PORT
+          value: "{{ .Values.app.containerPort }}"
+        - name: SWAGGER_BASE_PATH
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: SWAGGER_BASE_PATH
+
+        # JWT Configuration
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: JWT_SECRET
+
+        # Lambda Auth Configuration
+        - name: AUTH_LAMBDA_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: AUTH_LAMBDA_HOST
+
+        # Tracing Configuration
+        - name: TRACE_SERVICE_VERSION
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: TRACE_SERVICE_VERSION
+        - name: TRACE_SERVICE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: TRACE_SERVICE_NAME
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: OTEL_EXPORTER_OTLP_ENDPOINT
+        - name: OTEL_METRICS_EXPORT
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: OTEL_METRICS_EXPORT
+
+        # Email Configuration
+        - name: EMAIL_SENDER_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: EMAIL_SENDER_NAME
+        - name: EMAIL_SENDER_EMAIL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: EMAIL_SENDER_EMAIL
+        - name: EMAIL_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: EMAIL_API_KEY
+
+        # New Relic Configuration (Optional)
+        - name: NEW_RELIC_APP_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: NEW_RELIC_APP_NAME
+        - name: NEW_RELIC_LICENSE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: NEW_RELIC_LICENSE_KEY
+
+        readinessProbe:
+          {{- toYaml .Values.app.probes.readiness | nindent 10 }}
+        livenessProbe:
+          {{- toYaml .Values.app.probes.liveness | nindent 10 }}
+        resources:
+          {{- toYaml .Values.app.resources | nindent 10 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
