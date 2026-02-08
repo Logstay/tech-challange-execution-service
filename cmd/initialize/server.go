@@ -9,28 +9,23 @@ import (
 	"syscall"
 	"time"
 
-	billingHandler "github.com/Logstay/tech-challange-wherehouse-service/internal/adapters/http"
-	billingservice "github.com/Logstay/tech-challange-wherehouse-service/internal/application/billing"
+	app "github.com/Logstay/tech-challange-wherehouse-service/internal"
+	handler "github.com/Logstay/tech-challange-wherehouse-service/internal/adapters/http"
 	"github.com/Logstay/tech-challange-wherehouse-service/pkg/constant"
 	"github.com/gin-gonic/gin"
 	"github.com/oklog/run"
 )
 
 type ServerManager struct {
-	app            *Application
-	billingService *billingservice.Service
-	httpServer     *http.Server
-	serverHTTP     *gin.Engine
-	servers        run.Group
+	app        *Application
+	httpServer *http.Server
+	serverHTTP *gin.Engine
+	servers    run.Group
 }
 
 func NewServerManager(ctx context.Context, app *Application) (*ServerManager, error) {
 	sm := &ServerManager{
 		app: app,
-	}
-
-	if err := sm.initBillingService(ctx); err != nil {
-		return nil, fmt.Errorf("falha ao inicializar billing service: %w", err)
 	}
 
 	sm.setupHTTPServer()
@@ -40,21 +35,11 @@ func NewServerManager(ctx context.Context, app *Application) (*ServerManager, er
 	return sm, nil
 }
 
-func (sm *ServerManager) initBillingService(ctx context.Context) error {
-	service, err := sm.app.ServiceFactory.BuildApp(ctx)
-	if err != nil {
-		return err
-	}
-	sm.billingService = service
-
-	return nil
-}
-
 func (sm *ServerManager) setupHTTPServer() {
 
-	sm.serverHTTP = billingHandler.NewServer(
+	sm.serverHTTP = handler.NewServer(
 		sm.app.Context,
-		sm.billingService,
+		sm.app.ServiceFactory,
 		sm.app.Config,
 	).GetRouter()
 
@@ -117,9 +102,11 @@ func (sm *ServerManager) Start() error {
 }
 
 func (sm *ServerManager) StartEventProcessors(ctx context.Context) {
+	factory := app.NewServiceBuilder(sm.app.DB, sm.app.TracingProvider, sm.app.Config, sm.app.Cache)
+
 	sm.app.Config.Logger.Info("Iniciando processadores de eventos...")
 	go func() {
-		if err := sm.app.ServiceFactory.StartEvent(ctx); err != nil {
+		if err := factory.StartEvent(ctx); err != nil {
 			sm.app.Config.Logger.Error("Erro no processador de eventos de billing", err)
 		}
 	}()

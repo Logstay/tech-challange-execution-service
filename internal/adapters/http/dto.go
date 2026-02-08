@@ -1,76 +1,77 @@
 package http
 
-import bPorts "github.com/Logstay/tech-challange-wherehouse-service/internal/ports/billing"
+import "time"
 
-type CardPaymentRequest struct {
-	Installments      int              `json:"installments" example:"1"`
-	TransactionAmount float64          `json:"transaction_amount" example:"100.00"`
-	CardToken         string           `json:"token" example:"ea1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"`
-	Description       string           `json:"description" example:"Pagamento de serviço automotivo"`
-	PaymentMethodID   string           `json:"payment_method_id" example:"visa"`
-	Payer             CardPayerRequest `json:"payer"`
-	BodyCard          BodyCard         `json:"card_details"`
-	ExternalReference string           `json:"external_reference,omitempty" example:"ORDER-12345"`
-	NotificationURL   string           `json:"notification_url,omitempty" example:"https://seu-dominio.com/webhook/mercadopago"`
+// --- Consumable DTOs ---
+
+// SaveConsumableRequest representa o body para criação de consumível
+type SaveConsumableRequest struct {
+	Name        string  `json:"name" binding:"required" example:"Café Especial"`
+	Description string  `json:"description" example:"Café arábica torrado"`
+	Price       float64 `json:"price" binding:"required" example:"29.90"`
+	Code        string  `json:"code" binding:"required" example:"CAF-001"`
+	Quantity    int32   `json:"quantity" binding:"required" example:"100"`
 }
 
-type CardPayerRequest struct {
-	Email          string                 `json:"email" example:"customer@example.com"`
-	Identification *IdentificationRequest `json:"identification"`
+// UpdateConsumableRequest representa o body para atualização de consumível
+type UpdateConsumableRequest struct {
+	Name        string  `json:"name" binding:"required" example:"Café Especial Premium"`
+	Description string  `json:"description" example:"Café arábica torrado premium"`
+	Price       float64 `json:"price" binding:"required" example:"39.90"`
 }
 
-type IdentificationRequest struct {
-	Type   string `json:"type" example:"CPF"`
-	Number string `json:"number" example:"12345678909"`
+// --- Service Definition DTOs ---
+
+// SaveServiceDefinitionRequest representa o body para criação de definição de serviço
+type SaveServiceDefinitionRequest struct {
+	Name        string  `json:"name" binding:"required" example:"Limpeza Geral"`
+	Description string  `json:"description" example:"Serviço de limpeza completa"`
+	Price       float64 `json:"price" binding:"required" example:"150.00"`
 }
 
-type CardPaymentResponse struct {
-	ID                int64     `json:"id" example:"123456789"`
-	Status            string    `json:"status" example:"approved"`
-	StatusDetail      string    `json:"status_detail" example:"accredited"`
-	TransactionAmount float64   `json:"transaction_amount" example:"100.00"`
-	Description       string    `json:"description" example:"Pagamento de serviço automotivo"`
-	ExternalReference string    `json:"external_reference,omitempty" example:"ORDER-12345"`
-	PaymentMethodID   string    `json:"payment_method_id" example:"visa"`
-	PaymentTypeID     string    `json:"payment_type_id" example:"credit_card"`
-	Installments      int       `json:"installments" example:"1"`
-	Card              *CardInfo `json:"card,omitempty"`
+// UpdateServiceDefinitionRequest representa o body para atualização de definição de serviço
+type UpdateServiceDefinitionRequest struct {
+	Name        string  `json:"name" binding:"required" example:"Limpeza Geral Premium"`
+	Description string  `json:"description" example:"Serviço de limpeza completa premium"`
+	Price       float64 `json:"price" binding:"required" example:"200.00"`
 }
 
-type CardInfo struct {
-	FirstSixDigits string `json:"first_six_digits" example:"450995"`
-	LastFourDigits string `json:"last_four_digits" example:"3704"`
+// --- Response DTOs ---
+
+// MessageResponse resposta genérica com mensagem
+type MessageResponse struct {
+	Message string `json:"message" example:"Operation completed successfully"`
 }
 
-type BodyCard struct {
-	SiteID          string     `json:"site_id" example:"MLB"`
-	CardNumber      string     `json:"card_number" example:"4235647728025682"`
-	ExpirationYear  string     `json:"expiration_year" example:"2030"`
-	ExpirationMonth string     `json:"expiration_month" example:"11"`
-	SecurityCode    string     `json:"security_code" example:"123"`
-	Cardholder      Cardholder `json:"cardholder"`
+// ErrorResponse resposta de erro
+type ErrorResponse struct {
+	Error string `json:"error" example:"invalid request"`
 }
 
-type Cardholder struct {
-	Identification Identification `json:"identification"`
-	Name           string         `json:"name" example:"APRO"`
+// PaginatedResponse resposta paginada genérica
+type PaginatedResponse struct {
+	Data  any   `json:"data"`
+	Total int64 `json:"total" example:"100"`
+	Page  int64 `json:"page" example:"1"`
+	Limit int64 `json:"limit" example:"10"`
 }
 
-type Identification struct {
-	Type   string `json:"type" example:"CPF"`
-	Number string `json:"number" example:"12345678909"`
+type GetServiceDefinitionResponse struct {
+	UID         string    `json:"uid" example:"123e4567-e89b-12d3-a456-426614174000"`
+	Name        string    `json:"name" example:"Limpeza Geral"`
+	Description string    `json:"description" example:"Serviço de limpeza completa"`
+	Price       float64   `json:"price" example:"150.00"`
+	CreatedAt   time.Time `json:"created_at" example:"2024-01-01T12:00:00Z"`
+	UpdatedAt   time.Time `json:"updated_at" example:"2024-01-01T12:00:00Z"`
 }
 
-type QuotationResponse struct {
-	ID                string                         `json:"id"`
-	PaymentLink       string                         `json:"payment_link"`
-	SandboxLink       string                         `json:"sandbox_link"`
-	ExternalReference string                         `json:"external_reference"`
-	TotalAmount       float64                        `json:"total_amount"`
-	Currency          string                         `json:"currency"`
-	Status            string                         `json:"status"`
-	CreatedAt         string                         `json:"created_at"`
-	ExpiresAt         string                         `json:"expires_at"`
-	Items             []bPorts.PreferenceItemRequest `json:"items"`
-	Metadata          map[string]interface{}         `json:"metadata,omitempty"`
+type GetConsumableResponse struct {
+	UID         string    `json:"uid" example:"123e4567-e89b-12d3-a456-426614174000"`
+	Name        string    `json:"name" example:"Café Especial"`
+	Description string    `json:"description" example:"Café arábica torrado"`
+	Code        string    `json:"code" example:"CAF-001"`
+	Quantity    int64     `json:"quantity" example:"100"`
+	Price       float64   `json:"price" example:"29.90"`
+	CreatedAt   time.Time `json:"created_at" example:"2024-01-01T12:00:00Z"`
+	UpdatedAt   time.Time `json:"updated_at" example:"2024-01-01T12:00:00Z"`
 }

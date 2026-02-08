@@ -6,10 +6,13 @@ import (
 
 	"github.com/Logstay/tech-challange-wherehouse-service/config"
 	app "github.com/Logstay/tech-challange-wherehouse-service/internal"
+	interfaces "github.com/Logstay/tech-challange-wherehouse-service/internal/interfaces/services"
 	cPorts "github.com/Logstay/tech-challange-wherehouse-service/internal/ports/cache"
 	"github.com/Logstay/tech-challange-wherehouse-service/pkg/cache"
 	"github.com/Logstay/tech-challange-wherehouse-service/pkg/constant"
+	database "github.com/Logstay/tech-challange-wherehouse-service/pkg/postgres"
 	"github.com/Logstay/tech-challange-wherehouse-service/pkg/tracing"
+	_ "github.com/lib/pq"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
@@ -17,7 +20,8 @@ type Application struct {
 	Config          *config.Config
 	TracingProvider *tracing.Provider
 	Cache           cPorts.Cache
-	ServiceFactory  *app.ServiceFactory
+	DB              database.ConnectionFactory
+	ServiceFactory  interfaces.ServiceFactory
 	NewRelicApp     *newrelic.Application
 	Context         context.Context
 }
@@ -37,6 +41,10 @@ func Setup(ctx context.Context) (*Application, error) {
 
 	if err := appInstance.initTracing(); err != nil {
 		appInstance.Config.Logger.Error("Erro ao inicializar tracing provider (continuando sem ele)", err)
+	}
+
+	if err := appInstance.initDatabase(); err != nil {
+		return nil, fmt.Errorf("falha ao inicializar banco de dados: %w", err)
 	}
 
 	if err := appInstance.initCache(); err != nil {
@@ -94,16 +102,27 @@ func (a *Application) initCache() error {
 	return nil
 }
 
+func (a *Application) initDatabase() error {
+	db, err := database.NewPostgresConnectionFactory(a.Context, a.Config.Database)
+	if err != nil {
+		return fmt.Errorf("falha ao conectar ao banco de dados: %w", err)
+	}
+	a.DB = db
+	return nil
+}
+
 func (a *Application) prepareContext() {
 	a.Context = context.WithValue(a.Context, constant.TransactionName("logger"), a.Config.Logger)
 }
 
 func (a *Application) initServiceFactory() {
-	a.ServiceFactory = app.NewServiceFactory(
-		a.TracingProvider,
-		a.Config,
-		a.Cache,
-	)
+
+	factory, err := app.NewServiceBuilder(a.DB, a.TracingProvider, a.Config, a.Cache).Build()
+	if err != nil {
+		a.Config.Logger.Error("Erro ao criar service factory", err)
+		panic(err)
+	}
+	a.ServiceFactory = factory
 }
 
 func (a *Application) Shutdown(ctx context.Context) error {
@@ -115,6 +134,10 @@ func (a *Application) Shutdown(ctx context.Context) error {
 
 	if a.Cache != nil {
 		a.Cache.Close()
+	}
+
+	if a.DB != nil {
+		a.DB.Close()
 	}
 
 	a.Config.Logger.Info("Shutdown concluído")

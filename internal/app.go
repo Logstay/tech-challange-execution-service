@@ -1,87 +1,94 @@
-package services
+package internal
 
 import (
 	"context"
 
 	"github.com/Logstay/tech-challange-wherehouse-service/config"
-	// consumabledao "github.com/Logstay/tech-challange-wherehouse-service/internal/adapters/postgres/consumable"
-	billingadapter "github.com/Logstay/tech-challange-wherehouse-service/internal/adapters/billing/mercado_pago"
 	"github.com/Logstay/tech-challange-wherehouse-service/internal/adapters/kafka"
-	billingservice "github.com/Logstay/tech-challange-wherehouse-service/internal/application/billing"
-	eventprocessbilling "github.com/Logstay/tech-challange-wherehouse-service/internal/domain/billing/events/process-billing"
-	bPorts "github.com/Logstay/tech-challange-wherehouse-service/internal/ports/billing"
+	consumabledao "github.com/Logstay/tech-challange-wherehouse-service/internal/adapters/postgres/consumable"
+	inventorydao "github.com/Logstay/tech-challange-wherehouse-service/internal/adapters/postgres/inventory"
+	servicedefinitiondao "github.com/Logstay/tech-challange-wherehouse-service/internal/adapters/postgres/servicedefinition"
+	consumableservice "github.com/Logstay/tech-challange-wherehouse-service/internal/application/consumable"
+	servicedefinitionservice "github.com/Logstay/tech-challange-wherehouse-service/internal/application/servicedefinition"
+	eventprocess "github.com/Logstay/tech-challange-wherehouse-service/internal/domain/inventory/events/process"
 	cPorts "github.com/Logstay/tech-challange-wherehouse-service/internal/ports/cache"
-	messagebroker "github.com/Logstay/tech-challange-wherehouse-service/internal/ports/message-broker"
+	database "github.com/Logstay/tech-challange-wherehouse-service/pkg/postgres"
 	"github.com/Logstay/tech-challange-wherehouse-service/pkg/tracing"
 )
 
+type (
+	ConsumableSvc = consumableservice.Service
+	ServiceDefSvc = servicedefinitionservice.Service
+)
+
+type ServiceBuilder struct {
+	dbFactory database.ConnectionFactory
+	tracer    *tracing.Provider
+	cfg       *config.Config
+	cache     cPorts.Cache
+}
+
 type ServiceFactory struct {
-	tracer *tracing.Provider
-	cfg    *config.Config
-	cache  cPorts.Cache
+	*ConsumableSvc
+	*ServiceDefSvc
 }
 
-func NewServiceFactory(
-	tracer *tracing.Provider,
-	cfg *config.Config,
-	cache cPorts.Cache,
-) *ServiceFactory {
-	return &ServiceFactory{
-		tracer: tracer,
-		cfg:    cfg,
-		cache:  cache,
+func NewServiceBuilder(dbFactory database.ConnectionFactory, tracer *tracing.Provider, cfg *config.Config, cache cPorts.Cache) *ServiceBuilder {
+	return &ServiceBuilder{
+		dbFactory: dbFactory,
+		tracer:    tracer,
+		cfg:       cfg,
+		cache:     cache,
 	}
 }
 
-func (f *ServiceFactory) BuildApp(ctx context.Context) (service *billingservice.Service, err error) {
+func (b *ServiceBuilder) Build() (*ServiceFactory, error) {
+	db := b.dbFactory.NewConnection()
 
-	billingPayment, err := f.buildBillingAdapter()
-	if err != nil {
-		f.cfg.Logger.Error("Error building billing adapter", err)
-		return
-	}
+	consumableDAO := consumabledao.NewDAO(db, b.tracer)
+	inventoryDAO := inventorydao.NewDAO(db, b.tracer)
+	serviceDefDAO := servicedefinitiondao.NewDAO(db, b.tracer)
 
-	service = billingservice.NewService(billingservice.Dependencies{
-		Tracer:         f.tracer.NewTracer("billing_service"),
-		BillingAdapter: billingPayment,
+	consumableRepo := consumabledao.NewRepository(consumableDAO, inventoryDAO, b.tracer)
+	serviceDefRepo := servicedefinitiondao.NewRepository(serviceDefDAO, b.tracer)
+
+	consumableSvc := consumableservice.ConsumableService(consumableservice.Dependencies{
+		Repository: consumableRepo,
+		Tracer:     b.tracer.NewTracer("consumable_service"),
 	})
 
-	return
+	serviceDefSvc := servicedefinitionservice.ServiceDefinitionService(servicedefinitionservice.Dependencies{
+		Repository: serviceDefRepo,
+		Tracer:     b.tracer.NewTracer("servicedefinition_service"),
+	})
 
+	return &ServiceFactory{
+		ConsumableSvc: consumableSvc,
+		ServiceDefSvc: serviceDefSvc,
+	}, nil
 }
 
-func buildDatavizMessageBroker(cfg *config.Config) (broker messagebroker.MessageBroker, err error) {
-	return kafka.New(kafka.Config{
-		ProducerHosts: cfg.Kafka.ProducerHosts,
-		ConsumerHosts: cfg.Kafka.ConsumerHosts,
-		Username:      cfg.Kafka.Username,
-		Password:      cfg.Kafka.Password,
-	}, cfg.Logger)
-}
-
-func (f *ServiceFactory) StartEvent(ctx context.Context) (err error) {
-	broker, err := buildDatavizMessageBroker(f.cfg)
+func (b *ServiceBuilder) StartEvent(ctx context.Context) error {
+	broker, err := kafka.New(kafka.Config{
+		ProducerHosts: b.cfg.Kafka.ProducerHosts,
+		ConsumerHosts: b.cfg.Kafka.ConsumerHosts,
+		Username:      b.cfg.Kafka.Username,
+		Password:      b.cfg.Kafka.Password,
+	}, b.cfg.Logger)
 	if err != nil {
-		return
+		return err
 	}
 
-	processBillingEvent, err := eventprocessbilling.New(broker, f.tracer, f.cfg.Logger)
+	processBillingEvent, err := eventprocess.New(broker, b.tracer, b.cfg.Logger)
 	if err != nil {
-		return
+		return err
 	}
 
 	go func() {
-		err = processBillingEvent.Handle(ctx)
-		if err != nil {
-			f.cfg.Logger.Error("Error starting billing event processor", err)
+		if err := processBillingEvent.Handle(ctx); err != nil {
+			b.cfg.Logger.Error("Error starting billing event processor", err)
 		}
 	}()
 
 	select {}
-
-}
-
-func (f *ServiceFactory) buildBillingAdapter() (adapter bPorts.MercadoPagoBilling, err error) {
-
-	return billingadapter.NewMercadoPagoPayment(f.cfg.MercadoPago.AccessToken, f.cfg.Logger)
 }

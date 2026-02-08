@@ -22,6 +22,27 @@ type Server struct {
 	cfg     *config.Config
 }
 
+// @title			Tech Challenge - Wherehouse Service
+// @version		1.0.0
+// @description	Microsserviço de estoque e catálogo de serviços do Tech Challenge - Fase 4 do 12SOAT FIAP.
+// @description
+// @description				## 🚀 Funcionalidades
+// @description				- **Consumíveis**: CRUD completo de peças e itens de estoque
+// @description				- **Definições de Serviço**: Catálogo de serviços disponíveis com precificação
+// @description				- **Integração via Eventos**: Consumo de eventos Kafka para atualização de estoque
+//
+// @contact.name				Kaique Moreira
+// @contact.email				kaiquepng@gmail.com
+// @contact.url				https://github.com/Logstay/tech-challange-wherehouse-service
+//
+// @license.name				MIT License
+// @license.url				https://opensource.org/licenses/MIT
+//
+// @BasePath					/v1
+// @securityDefinitions.apikey	BearerAuth
+// @in							header
+// @name						Authorization
+// @description				Exemplo: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
 func NewServer(ctx context.Context, services services.ServiceFactory, cfg *config.Config) *Server {
 	handler := NewHandler(services)
 
@@ -54,9 +75,22 @@ func (s *Server) setupRouter() {
 
 	{
 
-		quotations := v1.Group("/quotations")
+		consumables := v1.Group("/consumables")
 		{
-			quotations.GET("/:id", s.handler.GetQuotation)
+			consumables.POST("", s.handler.SaveConsumable)
+			consumables.GET("/:uid", s.handler.GetConsumable)
+			consumables.GET("", s.handler.ListConsumable)
+			consumables.PUT("/:uid", s.handler.UpdateConsumable)
+			consumables.DELETE("/:uid", s.handler.DeleteConsumable)
+		}
+
+		serviceDefinitions := v1.Group("/service-definitions")
+		{
+			serviceDefinitions.POST("", s.handler.SaveServiceDefinition)
+			serviceDefinitions.GET("/:uid", s.handler.GetServiceDefinition)
+			serviceDefinitions.GET("", s.handler.ListServiceDefinition)
+			serviceDefinitions.PUT("/:uid", s.handler.UpdateServiceDefinition)
+			serviceDefinitions.DELETE("/:uid", s.handler.DeleteServiceDefinition)
 		}
 	}
 

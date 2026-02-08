@@ -9,12 +9,249 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {},
+        "contact": {
+            "name": "Kaique Moreira",
+            "url": "https://github.com/Logstay/tech-challange-wherehouse-service",
+            "email": "kaiquepng@gmail.com"
+        },
+        "license": {
+            "name": "MIT License",
+            "url": "https://opensource.org/licenses/MIT"
+        },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/consumables": {
+            "get": {
+                "description": "Retorna uma lista paginada de consumíveis",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Consumíveis"
+                ],
+                "summary": "Listar consumíveis",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Número da página",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Itens por página",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filtrar por nome",
+                        "name": "name",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.PaginatedResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Cria um novo consumível no estoque",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Consumíveis"
+                ],
+                "summary": "Criar consumível",
+                "parameters": [
+                    {
+                        "description": "Dados do consumível",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.SaveConsumableRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/http.MessageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/consumables/{uid}": {
+            "get": {
+                "description": "Retorna um consumível pelo seu identificador único",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Consumíveis"
+                ],
+                "summary": "Buscar consumível por UID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UID do consumível",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.GetConsumableResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Atualiza os dados de um consumível existente",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Consumíveis"
+                ],
+                "summary": "Atualizar consumível",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UID do consumível",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Dados para atualização",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.UpdateConsumableRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.MessageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Remove um consumível pelo seu identificador único",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Consumíveis"
+                ],
+                "summary": "Deletar consumível",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UID do consumível",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.MessageResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
                 "description": "Verifica o status de saúde do serviço de cobrança",
@@ -38,9 +275,55 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/payments/card": {
+        "/service-definitions": {
+            "get": {
+                "description": "Retorna uma lista paginada de definições de serviço",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Definições de Serviço"
+                ],
+                "summary": "Listar definições de serviço",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Número da página",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Itens por página",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filtrar por nome",
+                        "name": "name",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.PaginatedResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "post": {
-                "description": "Cria um pagamento com cartão de crédito via Mercado Pago. Retorna o status do pagamento imediatamente (aprovado ou rejeitado). Para ambiente de teste, use os cartões de teste fornecidos na documentação.",
+                "description": "Cria uma nova definição de serviço",
                 "consumes": [
                     "application/json"
                 ],
@@ -48,37 +331,174 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "💰 Pagamentos"
+                    "Definições de Serviço"
                 ],
-                "summary": "💳 Criar Pagamento com Cartão de Crédito",
+                "summary": "Criar definição de serviço",
                 "parameters": [
                     {
-                        "description": "Dados do pagamento com cartão",
+                        "description": "Dados da definição de serviço",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.CardPaymentRequest"
+                            "$ref": "#/definitions/http.SaveServiceDefinitionRequest"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "Pagamento processado com sucesso",
+                        "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/http.CardPaymentResponse"
+                            "$ref": "#/definitions/http.MessageResponse"
                         }
                     },
                     "400": {
-                        "description": "Requisição inválida",
+                        "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/errors.ErrorResponse"
+                            "$ref": "#/definitions/http.ErrorResponse"
                         }
                     },
                     "500": {
-                        "description": "Erro interno do servidor",
+                        "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/errors.ErrorResponse"
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/service-definitions/{uid}": {
+            "get": {
+                "description": "Retorna uma definição de serviço pelo seu identificador único",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Definições de Serviço"
+                ],
+                "summary": "Buscar definição de serviço por UID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UID da definição de serviço",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.GetServiceDefinitionResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Atualiza os dados de uma definição de serviço existente",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Definições de Serviço"
+                ],
+                "summary": "Atualizar definição de serviço",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UID da definição de serviço",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Dados para atualização",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.UpdateServiceDefinitionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.MessageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Remove uma definição de serviço pelo seu identificador único",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Definições de Serviço"
+                ],
+                "summary": "Deletar definição de serviço",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UID da definição de serviço",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.MessageResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
                         }
                     }
                 }
@@ -86,204 +506,221 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "errors.ErrorResponse": {
+        "http.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "invalid request"
+                }
+            }
+        },
+        "http.GetConsumableResponse": {
             "type": "object",
             "properties": {
                 "code": {
-                    "type": "integer",
-                    "example": 400
+                    "type": "string",
+                    "example": "CAF-001"
                 },
-                "error": {
+                "created_at": {
                     "type": "string",
-                    "example": "Descrição do erro"
-                }
-            }
-        },
-        "http.BodyCard": {
-            "type": "object",
-            "properties": {
-                "card_number": {
-                    "type": "string",
-                    "example": "4235647728025682"
-                },
-                "cardholder": {
-                    "$ref": "#/definitions/http.Cardholder"
-                },
-                "expiration_month": {
-                    "type": "string",
-                    "example": "11"
-                },
-                "expiration_year": {
-                    "type": "string",
-                    "example": "2030"
-                },
-                "security_code": {
-                    "type": "string",
-                    "example": "123"
-                },
-                "site_id": {
-                    "type": "string",
-                    "example": "MLB"
-                }
-            }
-        },
-        "http.CardInfo": {
-            "type": "object",
-            "properties": {
-                "first_six_digits": {
-                    "type": "string",
-                    "example": "450995"
-                },
-                "last_four_digits": {
-                    "type": "string",
-                    "example": "3704"
-                }
-            }
-        },
-        "http.CardPayerRequest": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string",
-                    "example": "customer@example.com"
-                },
-                "identification": {
-                    "$ref": "#/definitions/http.IdentificationRequest"
-                }
-            }
-        },
-        "http.CardPaymentRequest": {
-            "type": "object",
-            "properties": {
-                "card_details": {
-                    "$ref": "#/definitions/http.BodyCard"
+                    "example": "2024-01-01T12:00:00Z"
                 },
                 "description": {
                     "type": "string",
-                    "example": "Pagamento de serviço automotivo"
-                },
-                "external_reference": {
-                    "type": "string",
-                    "example": "ORDER-12345"
-                },
-                "installments": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "notification_url": {
-                    "type": "string",
-                    "example": "https://seu-dominio.com/webhook/mercadopago"
-                },
-                "payer": {
-                    "$ref": "#/definitions/http.CardPayerRequest"
-                },
-                "payment_method_id": {
-                    "type": "string",
-                    "example": "visa"
-                },
-                "token": {
-                    "type": "string",
-                    "example": "ea1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
-                },
-                "transaction_amount": {
-                    "type": "number",
-                    "example": 100
-                }
-            }
-        },
-        "http.CardPaymentResponse": {
-            "type": "object",
-            "properties": {
-                "card": {
-                    "$ref": "#/definitions/http.CardInfo"
-                },
-                "description": {
-                    "type": "string",
-                    "example": "Pagamento de serviço automotivo"
-                },
-                "external_reference": {
-                    "type": "string",
-                    "example": "ORDER-12345"
-                },
-                "id": {
-                    "type": "integer",
-                    "example": 123456789
-                },
-                "installments": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "payment_method_id": {
-                    "type": "string",
-                    "example": "visa"
-                },
-                "payment_type_id": {
-                    "type": "string",
-                    "example": "credit_card"
-                },
-                "status": {
-                    "type": "string",
-                    "example": "approved"
-                },
-                "status_detail": {
-                    "type": "string",
-                    "example": "accredited"
-                },
-                "transaction_amount": {
-                    "type": "number",
-                    "example": 100
-                }
-            }
-        },
-        "http.Cardholder": {
-            "type": "object",
-            "properties": {
-                "identification": {
-                    "$ref": "#/definitions/http.Identification"
+                    "example": "Café arábica torrado"
                 },
                 "name": {
                     "type": "string",
-                    "example": "APRO"
+                    "example": "Café Especial"
+                },
+                "price": {
+                    "type": "number",
+                    "example": 29.9
+                },
+                "quantity": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "uid": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "updated_at": {
+                    "type": "string",
+                    "example": "2024-01-01T12:00:00Z"
                 }
             }
         },
-        "http.Identification": {
+        "http.GetServiceDefinitionResponse": {
             "type": "object",
             "properties": {
-                "number": {
+                "created_at": {
                     "type": "string",
-                    "example": "12345678909"
+                    "example": "2024-01-01T12:00:00Z"
                 },
-                "type": {
+                "description": {
                     "type": "string",
-                    "example": "CPF"
+                    "example": "Serviço de limpeza completa"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Limpeza Geral"
+                },
+                "price": {
+                    "type": "number",
+                    "example": 150
+                },
+                "uid": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "updated_at": {
+                    "type": "string",
+                    "example": "2024-01-01T12:00:00Z"
                 }
             }
         },
-        "http.IdentificationRequest": {
+        "http.MessageResponse": {
             "type": "object",
             "properties": {
-                "number": {
+                "message": {
                     "type": "string",
-                    "example": "12345678909"
-                },
-                "type": {
-                    "type": "string",
-                    "example": "CPF"
+                    "example": "Operation completed successfully"
                 }
             }
+        },
+        "http.PaginatedResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "limit": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "page": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 100
+                }
+            }
+        },
+        "http.SaveConsumableRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "name",
+                "price",
+                "quantity"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "CAF-001"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Café arábica torrado"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Café Especial"
+                },
+                "price": {
+                    "type": "number",
+                    "example": 29.9
+                },
+                "quantity": {
+                    "type": "integer",
+                    "example": 100
+                }
+            }
+        },
+        "http.SaveServiceDefinitionRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "price"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Serviço de limpeza completa"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Limpeza Geral"
+                },
+                "price": {
+                    "type": "number",
+                    "example": 150
+                }
+            }
+        },
+        "http.UpdateConsumableRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "price"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Café arábica torrado premium"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Café Especial Premium"
+                },
+                "price": {
+                    "type": "number",
+                    "example": 39.9
+                }
+            }
+        },
+        "http.UpdateServiceDefinitionRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "price"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Serviço de limpeza completa premium"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Limpeza Geral Premium"
+                },
+                "price": {
+                    "type": "number",
+                    "example": 200
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Exemplo: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
+	Version:          "1.0.0",
 	Host:             "",
-	BasePath:         "",
+	BasePath:         "/v1",
 	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	Title:            "Tech Challenge - Wherehouse Service",
+	Description:      "Microsserviço de estoque e catálogo de serviços do Tech Challenge - Fase 4 do 12SOAT FIAP.\n\n## 🚀 Funcionalidades\n- **Consumíveis**: CRUD completo de peças e itens de estoque\n- **Definições de Serviço**: Catálogo de serviços disponíveis com precificação\n- **Integração via Eventos**: Consumo de eventos Kafka para atualização de estoque",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

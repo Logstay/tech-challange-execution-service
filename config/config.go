@@ -2,7 +2,6 @@ package config
 
 import (
 	"os"
-	"time"
 
 	"github.com/Logstay/tech-challange-wherehouse-service/pkg/logger"
 	"github.com/caarlos0/env/v11"
@@ -26,12 +25,14 @@ type JWTConfig struct {
 }
 
 type DatabaseConfig struct {
-	Host     string        `env:"DB_HOST,required"`
-	Port     int           `env:"DB_PORT" envDefault:"27017"`
-	User     string        `env:"DB_USER,required"`
-	Password string        `env:"DB_PASSWORD,required"`
-	Database string        `env:"DB_NAME,required"`
-	Timeout  time.Duration `env:"DB_TIMEOUT,required"`
+	Host     string `env:"DB_HOST"`
+	Port     int    `env:"DB_PORT"`
+	User     string `env:"DB_USER"`
+	Password string `env:"DB_PASSWORD"`
+	Database string `env:"DB_NAME"`
+	SSLMode  string `env:"DB_SSLMODE"`
+	PoolMin  int    `env:"POOL_MIN" envDefault:"1"`
+	PoolMax  int    `env:"POOL_MAX" envDefault:"10"`
 }
 
 type ServerConfig struct {

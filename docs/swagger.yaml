@@ -1,139 +1,314 @@
+basePath: /v1
 definitions:
-  errors.ErrorResponse:
+  http.ErrorResponse:
+    properties:
+      error:
+        example: invalid request
+        type: string
+    type: object
+  http.GetConsumableResponse:
     properties:
       code:
-        example: 400
-        type: integer
-      error:
-        example: Descrição do erro
+        example: CAF-001
         type: string
-    type: object
-  http.BodyCard:
-    properties:
-      card_number:
-        example: "4235647728025682"
+      created_at:
+        example: "2024-01-01T12:00:00Z"
         type: string
-      cardholder:
-        $ref: '#/definitions/http.Cardholder'
-      expiration_month:
-        example: "11"
-        type: string
-      expiration_year:
-        example: "2030"
-        type: string
-      security_code:
-        example: "123"
-        type: string
-      site_id:
-        example: MLB
-        type: string
-    type: object
-  http.CardInfo:
-    properties:
-      first_six_digits:
-        example: "450995"
-        type: string
-      last_four_digits:
-        example: "3704"
-        type: string
-    type: object
-  http.CardPayerRequest:
-    properties:
-      email:
-        example: customer@example.com
-        type: string
-      identification:
-        $ref: '#/definitions/http.IdentificationRequest'
-    type: object
-  http.CardPaymentRequest:
-    properties:
-      card_details:
-        $ref: '#/definitions/http.BodyCard'
       description:
-        example: Pagamento de serviço automotivo
+        example: Café arábica torrado
         type: string
-      external_reference:
-        example: ORDER-12345
-        type: string
-      installments:
-        example: 1
-        type: integer
-      notification_url:
-        example: https://seu-dominio.com/webhook/mercadopago
-        type: string
-      payer:
-        $ref: '#/definitions/http.CardPayerRequest'
-      payment_method_id:
-        example: visa
-        type: string
-      token:
-        example: ea1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
-        type: string
-      transaction_amount:
-        example: 100
-        type: number
-    type: object
-  http.CardPaymentResponse:
-    properties:
-      card:
-        $ref: '#/definitions/http.CardInfo'
-      description:
-        example: Pagamento de serviço automotivo
-        type: string
-      external_reference:
-        example: ORDER-12345
-        type: string
-      id:
-        example: 123456789
-        type: integer
-      installments:
-        example: 1
-        type: integer
-      payment_method_id:
-        example: visa
-        type: string
-      payment_type_id:
-        example: credit_card
-        type: string
-      status:
-        example: approved
-        type: string
-      status_detail:
-        example: accredited
-        type: string
-      transaction_amount:
-        example: 100
-        type: number
-    type: object
-  http.Cardholder:
-    properties:
-      identification:
-        $ref: '#/definitions/http.Identification'
       name:
-        example: APRO
+        example: Café Especial
+        type: string
+      price:
+        example: 29.9
+        type: number
+      quantity:
+        example: 100
+        type: integer
+      uid:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      updated_at:
+        example: "2024-01-01T12:00:00Z"
         type: string
     type: object
-  http.Identification:
+  http.GetServiceDefinitionResponse:
     properties:
-      number:
-        example: "12345678909"
+      created_at:
+        example: "2024-01-01T12:00:00Z"
         type: string
-      type:
-        example: CPF
+      description:
+        example: Serviço de limpeza completa
+        type: string
+      name:
+        example: Limpeza Geral
+        type: string
+      price:
+        example: 150
+        type: number
+      uid:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      updated_at:
+        example: "2024-01-01T12:00:00Z"
         type: string
     type: object
-  http.IdentificationRequest:
+  http.MessageResponse:
     properties:
-      number:
-        example: "12345678909"
+      message:
+        example: Operation completed successfully
         type: string
-      type:
-        example: CPF
+    type: object
+  http.PaginatedResponse:
+    properties:
+      data: {}
+      limit:
+        example: 10
+        type: integer
+      page:
+        example: 1
+        type: integer
+      total:
+        example: 100
+        type: integer
+    type: object
+  http.SaveConsumableRequest:
+    properties:
+      code:
+        example: CAF-001
         type: string
+      description:
+        example: Café arábica torrado
+        type: string
+      name:
+        example: Café Especial
+        type: string
+      price:
+        example: 29.9
+        type: number
+      quantity:
+        example: 100
+        type: integer
+    required:
+    - code
+    - name
+    - price
+    - quantity
+    type: object
+  http.SaveServiceDefinitionRequest:
+    properties:
+      description:
+        example: Serviço de limpeza completa
+        type: string
+      name:
+        example: Limpeza Geral
+        type: string
+      price:
+        example: 150
+        type: number
+    required:
+    - name
+    - price
+    type: object
+  http.UpdateConsumableRequest:
+    properties:
+      description:
+        example: Café arábica torrado premium
+        type: string
+      name:
+        example: Café Especial Premium
+        type: string
+      price:
+        example: 39.9
+        type: number
+    required:
+    - name
+    - price
+    type: object
+  http.UpdateServiceDefinitionRequest:
+    properties:
+      description:
+        example: Serviço de limpeza completa premium
+        type: string
+      name:
+        example: Limpeza Geral Premium
+        type: string
+      price:
+        example: 200
+        type: number
+    required:
+    - name
+    - price
     type: object
 info:
-  contact: {}
+  contact:
+    email: kaiquepng@gmail.com
+    name: Kaique Moreira
+    url: https://github.com/Logstay/tech-challange-wherehouse-service
+  description: "Microsserviço de estoque e catálogo de serviços do Tech Challenge
+    - Fase 4 do 12SOAT FIAP.\n\n## \U0001F680 Funcionalidades\n- **Consumíveis**:
+    CRUD completo de peças e itens de estoque\n- **Definições de Serviço**: Catálogo
+    de serviços disponíveis com precificação\n- **Integração via Eventos**: Consumo
+    de eventos Kafka para atualização de estoque"
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+  title: Tech Challenge - Wherehouse Service
+  version: 1.0.0
 paths:
+  /consumables:
+    get:
+      description: Retorna uma lista paginada de consumíveis
+      parameters:
+      - default: 1
+        description: Número da página
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Itens por página
+        in: query
+        name: limit
+        type: integer
+      - description: Filtrar por nome
+        in: query
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.PaginatedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Listar consumíveis
+      tags:
+      - Consumíveis
+    post:
+      consumes:
+      - application/json
+      description: Cria um novo consumível no estoque
+      parameters:
+      - description: Dados do consumível
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.SaveConsumableRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Criar consumível
+      tags:
+      - Consumíveis
+  /consumables/{uid}:
+    delete:
+      description: Remove um consumível pelo seu identificador único
+      parameters:
+      - description: UID do consumível
+        in: path
+        name: uid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.MessageResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Deletar consumível
+      tags:
+      - Consumíveis
+    get:
+      description: Retorna um consumível pelo seu identificador único
+      parameters:
+      - description: UID do consumível
+        in: path
+        name: uid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.GetConsumableResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Buscar consumível por UID
+      tags:
+      - Consumíveis
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de um consumível existente
+      parameters:
+      - description: UID do consumível
+        in: path
+        name: uid
+        required: true
+        type: string
+      - description: Dados para atualização
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateConsumableRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Atualizar consumível
+      tags:
+      - Consumíveis
   /health:
     get:
       description: Verifica o status de saúde do serviço de cobrança
@@ -149,36 +324,162 @@ paths:
       summary: "\U0001F3E5 Health Check"
       tags:
       - "\U0001F527 Sistema"
-  /v1/payments/card:
+  /service-definitions:
+    get:
+      description: Retorna uma lista paginada de definições de serviço
+      parameters:
+      - default: 1
+        description: Número da página
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Itens por página
+        in: query
+        name: limit
+        type: integer
+      - description: Filtrar por nome
+        in: query
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.PaginatedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Listar definições de serviço
+      tags:
+      - Definições de Serviço
     post:
       consumes:
       - application/json
-      description: Cria um pagamento com cartão de crédito via Mercado Pago. Retorna
-        o status do pagamento imediatamente (aprovado ou rejeitado). Para ambiente
-        de teste, use os cartões de teste fornecidos na documentação.
+      description: Cria uma nova definição de serviço
       parameters:
-      - description: Dados do pagamento com cartão
+      - description: Dados da definição de serviço
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/http.CardPaymentRequest'
+          $ref: '#/definitions/http.SaveServiceDefinitionRequest'
       produces:
       - application/json
       responses:
         "201":
-          description: Pagamento processado com sucesso
+          description: Created
           schema:
-            $ref: '#/definitions/http.CardPaymentResponse'
+            $ref: '#/definitions/http.MessageResponse'
         "400":
-          description: Requisição inválida
+          description: Bad Request
           schema:
-            $ref: '#/definitions/errors.ErrorResponse'
+            $ref: '#/definitions/http.ErrorResponse'
         "500":
-          description: Erro interno do servidor
+          description: Internal Server Error
           schema:
-            $ref: '#/definitions/errors.ErrorResponse'
-      summary: "\U0001F4B3 Criar Pagamento com Cartão de Crédito"
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Criar definição de serviço
       tags:
-      - "\U0001F4B0 Pagamentos"
+      - Definições de Serviço
+  /service-definitions/{uid}:
+    delete:
+      description: Remove uma definição de serviço pelo seu identificador único
+      parameters:
+      - description: UID da definição de serviço
+        in: path
+        name: uid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.MessageResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Deletar definição de serviço
+      tags:
+      - Definições de Serviço
+    get:
+      description: Retorna uma definição de serviço pelo seu identificador único
+      parameters:
+      - description: UID da definição de serviço
+        in: path
+        name: uid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.GetServiceDefinitionResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Buscar definição de serviço por UID
+      tags:
+      - Definições de Serviço
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de uma definição de serviço existente
+      parameters:
+      - description: UID da definição de serviço
+        in: path
+        name: uid
+        required: true
+        type: string
+      - description: Dados para atualização
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateServiceDefinitionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Atualizar definição de serviço
+      tags:
+      - Definições de Serviço
+securityDefinitions:
+  BearerAuth:
+    description: 'Exemplo: ''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'''
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"
