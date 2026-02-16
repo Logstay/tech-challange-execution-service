@@ -3,11 +3,11 @@ package consumable
 import (
 	"context"
 
-	modelconsumable "github.com/Logstay/tech-challange-wherehouse-service/internal/domain/consumable"
-	ports "github.com/Logstay/tech-challange-wherehouse-service/internal/ports/consumable"
-	inventoryports "github.com/Logstay/tech-challange-wherehouse-service/internal/ports/inventory"
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/null"
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/tracing"
+	modelconsumable "github.com/Logstay/tech-challange-execution-service/internal/domain/consumable"
+	ports "github.com/Logstay/tech-challange-execution-service/internal/ports/consumable"
+	inventoryports "github.com/Logstay/tech-challange-execution-service/internal/ports/inventory"
+	"github.com/Logstay/tech-challange-execution-service/pkg/null"
+	"github.com/Logstay/tech-challange-execution-service/pkg/tracing"
 )
 
 type repository struct {

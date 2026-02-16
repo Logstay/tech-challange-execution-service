@@ -1,8 +1,8 @@
 package inventory
 
 import (
-	httperr "github.com/Logstay/tech-challange-wherehouse-service/pkg/errors"
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/null"
+	httperr "github.com/Logstay/tech-challange-execution-service/pkg/errors"
+	"github.com/Logstay/tech-challange-execution-service/pkg/null"
 )
 
 type InventoryFactory interface {

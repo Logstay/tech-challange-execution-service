@@ -6,10 +6,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Logstay/tech-challange-wherehouse-service/config"
-	_ "github.com/Logstay/tech-challange-wherehouse-service/docs"
-	services "github.com/Logstay/tech-challange-wherehouse-service/internal/interfaces/services"
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/constant"
+	"github.com/Logstay/tech-challange-execution-service/config"
+	"github.com/Logstay/tech-challange-execution-service/docs"
+	_ "github.com/Logstay/tech-challange-execution-service/docs"
+	services "github.com/Logstay/tech-challange-execution-service/internal/interfaces/services"
+	"github.com/Logstay/tech-challange-execution-service/pkg/constant"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -22,7 +23,7 @@ type Server struct {
 	cfg     *config.Config
 }
 
-// @title			Tech Challenge - Wherehouse Service
+// @title			Tech Challenge - ExecutionService
 // @version		1.0.0
 // @description	Microsserviço de estoque e catálogo de serviços do Tech Challenge - Fase 4 do 12SOAT FIAP.
 // @description
@@ -33,7 +34,7 @@ type Server struct {
 //
 // @contact.name				Kaique Moreira
 // @contact.email				kaiquepng@gmail.com
-// @contact.url				https://github.com/Logstay/tech-challange-wherehouse-service
+// @contact.url				https://github.com/Logstay/tech-challange-execution-service
 //
 // @license.name				MIT License
 // @license.url				https://opensource.org/licenses/MIT
@@ -68,6 +69,7 @@ func (s *Server) setupRouter() {
 	}))
 
 	router.Use(gin.Recovery())
+	docs.SwaggerInfo.BasePath = s.cfg.Server.SwaggerBasePath
 
 	v1 := router.Group("/v1")
 	v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -76,6 +78,7 @@ func (s *Server) setupRouter() {
 	{
 
 		consumables := v1.Group("/consumables")
+		consumables.Use(AuthzWithConfig(s.cfg))
 		{
 			consumables.POST("", s.handler.SaveConsumable)
 			consumables.GET("/:uid", s.handler.GetConsumable)
@@ -85,6 +88,7 @@ func (s *Server) setupRouter() {
 		}
 
 		serviceDefinitions := v1.Group("/service-definitions")
+		serviceDefinitions.Use(AuthzWithConfig(s.cfg))
 		{
 			serviceDefinitions.POST("", s.handler.SaveServiceDefinition)
 			serviceDefinitions.GET("/:uid", s.handler.GetServiceDefinition)

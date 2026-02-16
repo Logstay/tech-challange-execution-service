@@ -7,7 +7,7 @@ metadata:
   namespace: {{ .Values.global.namespace }}
   {{- end }}
   labels:
-    {{- include "tech-challange-wherehouse-service.labels" . | nindent 4 }}
+    {{- include "tech-challange-execution-service.labels" . | nindent 4 }}
 data:
   DB_HOST: {{ .Values.app.env.DB_HOST | default "" | quote }}
   DB_PORT: {{ .Values.app.env.DB_PORT | default "5432" | quote }}

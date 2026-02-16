@@ -3,10 +3,10 @@ package servicedefinition
 import (
 	"context"
 
-	modelservicedefinition "github.com/Logstay/tech-challange-wherehouse-service/internal/domain/servicedefinition"
-	ports "github.com/Logstay/tech-challange-wherehouse-service/internal/ports/servicedefinition"
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/null"
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/tracing"
+	modelservicedefinition "github.com/Logstay/tech-challange-execution-service/internal/domain/servicedefinition"
+	ports "github.com/Logstay/tech-challange-execution-service/internal/ports/servicedefinition"
+	"github.com/Logstay/tech-challange-execution-service/pkg/null"
+	"github.com/Logstay/tech-challange-execution-service/pkg/tracing"
 )
 
 type repository struct {

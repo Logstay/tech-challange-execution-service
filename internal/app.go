@@ -3,17 +3,17 @@ package internal
 import (
 	"context"
 
-	"github.com/Logstay/tech-challange-wherehouse-service/config"
-	"github.com/Logstay/tech-challange-wherehouse-service/internal/adapters/kafka"
-	consumabledao "github.com/Logstay/tech-challange-wherehouse-service/internal/adapters/postgres/consumable"
-	inventorydao "github.com/Logstay/tech-challange-wherehouse-service/internal/adapters/postgres/inventory"
-	servicedefinitiondao "github.com/Logstay/tech-challange-wherehouse-service/internal/adapters/postgres/servicedefinition"
-	consumableservice "github.com/Logstay/tech-challange-wherehouse-service/internal/application/consumable"
-	servicedefinitionservice "github.com/Logstay/tech-challange-wherehouse-service/internal/application/servicedefinition"
-	eventprocess "github.com/Logstay/tech-challange-wherehouse-service/internal/domain/inventory/events/process"
-	cPorts "github.com/Logstay/tech-challange-wherehouse-service/internal/ports/cache"
-	database "github.com/Logstay/tech-challange-wherehouse-service/pkg/postgres"
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/tracing"
+	"github.com/Logstay/tech-challange-execution-service/config"
+	"github.com/Logstay/tech-challange-execution-service/internal/adapters/kafka"
+	consumabledao "github.com/Logstay/tech-challange-execution-service/internal/adapters/postgres/consumable"
+	inventorydao "github.com/Logstay/tech-challange-execution-service/internal/adapters/postgres/inventory"
+	servicedefinitiondao "github.com/Logstay/tech-challange-execution-service/internal/adapters/postgres/servicedefinition"
+	consumableservice "github.com/Logstay/tech-challange-execution-service/internal/application/consumable"
+	servicedefinitionservice "github.com/Logstay/tech-challange-execution-service/internal/application/servicedefinition"
+	eventprocess "github.com/Logstay/tech-challange-execution-service/internal/domain/inventory/events/process"
+	cPorts "github.com/Logstay/tech-challange-execution-service/internal/ports/cache"
+	database "github.com/Logstay/tech-challange-execution-service/pkg/postgres"
+	"github.com/Logstay/tech-challange-execution-service/pkg/tracing"
 )
 
 type (

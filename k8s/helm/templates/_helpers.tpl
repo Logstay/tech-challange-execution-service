@@ -2,7 +2,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "tech-challange-wherehouse-service.name" -}}
+{{- define "tech-challange-execution-service.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
@@ -10,7 +10,7 @@ Expand the name of the chart.
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
-{{- define "tech-challange-wherehouse-service.fullname" -}}
+{{- define "tech-challange-execution-service.fullname" -}}
 {{- if .Values.fullnameOverride -}}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
@@ -26,16 +26,16 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "tech-challange-wherehouse-service.chart" -}}
+{{- define "tech-challange-execution-service.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
 Common labels
 */}}
-{{- define "tech-challange-wherehouse-service.labels" -}}
-helm.sh/chart: {{ include "tech-challange-wherehouse-service.chart" . }}
-{{ include "tech-challange-wherehouse-service.selectorLabels" . }}
+{{- define "tech-challange-execution-service.labels" -}}
+helm.sh/chart: {{ include "tech-challange-execution-service.chart" . }}
+{{ include "tech-challange-execution-service.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,24 +45,24 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "tech-challange-wherehouse-service.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "tech-challange-wherehouse-service.name" . }}
+{{- define "tech-challange-execution-service.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "tech-challange-execution-service.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{/*
 App selector labels
 */}}
-{{- define "tech-challange-wherehouse-service.appSelectorLabels" -}}
+{{- define "tech-challange-execution-service.appSelectorLabels" -}}
 app: {{ .Values.app.name }}
 {{- end -}}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "tech-challange-wherehouse-service.serviceAccountName" -}}
+{{- define "tech-challange-execution-service.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "tech-challange-wherehouse-service.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "tech-challange-execution-service.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}

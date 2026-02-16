@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	ports "github.com/Logstay/tech-challange-wherehouse-service/internal/ports/message-broker"
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/logger"
+	ports "github.com/Logstay/tech-challange-execution-service/internal/ports/message-broker"
+	"github.com/Logstay/tech-challange-execution-service/pkg/logger"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/google/uuid"
 )

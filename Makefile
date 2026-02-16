@@ -1,17 +1,35 @@
 up:
-	@cd configs/local && docker compose up -d
+	@cd config/local && docker compose up -d
 
 up-build:
-	@cd configs/local && docker compose up --build --force-recreate -d
+	@cd config/local && docker compose up --build --force-recreate -d
 
 down:
-	@cd configs/local && docker compose down
+	@cd config/local && docker compose down
 
 build:
 	@CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags -a -installsuffix cgo cmd/main.go
 
+migrate:
+	@docker run --rm -ti \
+	--net=host \
+	-v $(PWD)/config/migrations:/flyway/conf \
+	-v $(PWD)/config/migrations/sql:/flyway/sql \
+	flyway/flyway:11 \
+	-configFiles=/flyway/conf/flyway.local.conf \
+	repair migrate
+
+	@docker run --rm -ti \
+	--net=host \
+	-v $(PWD)/config/migrations:/flyway/conf \
+	-v $(PWD)/config/migrations/sql:/flyway/sql \
+	flyway/flyway:11 \
+	-configFiles=/flyway/conf/flyway.test.conf \
+	repair migrate
+
+
 restart:
-	@cd configs/local && docker compose restart
+	@cd config/local && docker compose restart
 
 check:
 	@echo "CHECK LINT ANALYSIS"

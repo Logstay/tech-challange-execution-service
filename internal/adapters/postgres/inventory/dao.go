@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	"errors"
 
-	ports "github.com/Logstay/tech-challange-wherehouse-service/internal/ports/inventory"
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/null"
-	database "github.com/Logstay/tech-challange-wherehouse-service/pkg/postgres"
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/tracing"
+	ports "github.com/Logstay/tech-challange-execution-service/internal/ports/inventory"
+	"github.com/Logstay/tech-challange-execution-service/pkg/null"
+	database "github.com/Logstay/tech-challange-execution-service/pkg/postgres"
+	"github.com/Logstay/tech-challange-execution-service/pkg/tracing"
 )
 
 type DAO struct {

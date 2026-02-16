@@ -1,7 +1,7 @@
 package inventory
 
 import (
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/null"
+	"github.com/Logstay/tech-challange-execution-service/pkg/null"
 )
 
 type Inventory interface {

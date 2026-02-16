@@ -3,10 +3,10 @@ package servicedefinition
 import (
 	"context"
 
-	cmds "github.com/Logstay/tech-challange-wherehouse-service/internal/application/servicedefinition/commands"
-	qries "github.com/Logstay/tech-challange-wherehouse-service/internal/application/servicedefinition/queries"
-	ports "github.com/Logstay/tech-challange-wherehouse-service/internal/ports/servicedefinition"
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/tracing"
+	cmds "github.com/Logstay/tech-challange-execution-service/internal/application/servicedefinition/commands"
+	qries "github.com/Logstay/tech-challange-execution-service/internal/application/servicedefinition/queries"
+	ports "github.com/Logstay/tech-challange-execution-service/internal/ports/servicedefinition"
+	"github.com/Logstay/tech-challange-execution-service/pkg/tracing"
 )
 
 type Service struct {

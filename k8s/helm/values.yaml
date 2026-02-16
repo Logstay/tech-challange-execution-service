@@ -4,7 +4,7 @@ global:
 
 app:
   enabled: true
-  name: tech-challange-wherehouse-service
+  name: tech-challange-execution-service
   image:
     repository: ""
     tag: "latest"

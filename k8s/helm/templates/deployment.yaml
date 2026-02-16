@@ -7,16 +7,16 @@ metadata:
   namespace: {{ .Values.global.namespace }}
   {{- end }}
   labels:
-    {{- include "tech-challange-wherehouse-service.labels" . | nindent 4 }}
+    {{- include "tech-challange-execution-service.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.app.replicaCount }}
   selector:
     matchLabels:
-      {{- include "tech-challange-wherehouse-service.appSelectorLabels" . | nindent 6 }}
+      {{- include "tech-challange-execution-service.appSelectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "tech-challange-wherehouse-service.appSelectorLabels" . | nindent 8 }}
+        {{- include "tech-challange-execution-service.appSelectorLabels" . | nindent 8 }}
         version: v1
       annotations:
         timestamp: {{ now | quote }}

@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 
-	cports "github.com/Logstay/tech-challange-wherehouse-service/internal/ports/consumable"
+	cports "github.com/Logstay/tech-challange-execution-service/internal/ports/consumable"
 )
 
 type ConsumableService interface {

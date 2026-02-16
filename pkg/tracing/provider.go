@@ -3,7 +3,7 @@ package tracing
 import (
 	"context"
 
-	"github.com/Logstay/tech-challange-wherehouse-service/config"
+	"github.com/Logstay/tech-challange-execution-service/config"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/propagation"

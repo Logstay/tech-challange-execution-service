@@ -1,5 +1,5 @@
 {{- if .Values.ingress.enabled -}}
-{{- $fullName := include "tech-challange-wherehouse-service.fullname" . -}}
+{{- $fullName := include "tech-challange-execution-service.fullname" . -}}
 {{- $svcPort := .Values.service.port -}}
 {{- if and .Values.ingress.className (not (hasKey .Values.ingress.annotations "kubernetes.io/ingress.class")) }}
   {{- $_ := set .Values.ingress.annotations "kubernetes.io/ingress.class" .Values.ingress.className}}
@@ -18,7 +18,7 @@ metadata:
   namespace: {{ .Values.global.namespace }}
   {{- end }}
   labels:
-    {{- include "tech-challange-wherehouse-service.labels" . | nindent 4 }}
+    {{- include "tech-challange-execution-service.labels" . | nindent 4 }}
   {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}

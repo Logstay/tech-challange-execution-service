@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/null"
+	"github.com/Logstay/tech-challange-execution-service/pkg/null"
 )
 
 type ServiceDefinition interface {

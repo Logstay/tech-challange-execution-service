@@ -3,10 +3,10 @@ package command
 import (
 	"errors"
 
-	"github.com/Logstay/tech-challange-wherehouse-service/config"
-	ports "github.com/Logstay/tech-challange-wherehouse-service/internal/ports/servicedefinition"
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/null"
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/tracing"
+	"github.com/Logstay/tech-challange-execution-service/config"
+	ports "github.com/Logstay/tech-challange-execution-service/internal/ports/servicedefinition"
+	"github.com/Logstay/tech-challange-execution-service/pkg/null"
+	"github.com/Logstay/tech-challange-execution-service/pkg/tracing"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 

@@ -8,7 +8,7 @@
       "args": [
         "compose",
         "-f",
-        "tech-challange-wherehouse-service/configs/local/docker-compose.yaml",
+        "tech-challange-execution-service/configs/local/docker-compose.yaml",
         "up",
         "-d",
         "db",
@@ -186,7 +186,7 @@
       "args": [
         "logs",
         "-f",
-        "tech-challange-wherehouse-service"
+        "tech-challange-execution-service"
       ],
       "group": "build",
       "presentation": {

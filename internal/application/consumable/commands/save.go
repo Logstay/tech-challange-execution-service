@@ -3,10 +3,10 @@ package command
 import (
 	"context"
 
-	modelconsumable "github.com/Logstay/tech-challange-wherehouse-service/internal/domain/consumable"
-	ports "github.com/Logstay/tech-challange-wherehouse-service/internal/ports/consumable"
-	httperr "github.com/Logstay/tech-challange-wherehouse-service/pkg/errors"
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/tracing"
+	modelconsumable "github.com/Logstay/tech-challange-execution-service/internal/domain/consumable"
+	ports "github.com/Logstay/tech-challange-execution-service/internal/ports/consumable"
+	httperr "github.com/Logstay/tech-challange-execution-service/pkg/errors"
+	"github.com/Logstay/tech-challange-execution-service/pkg/tracing"
 )
 
 type SaveConsumableHandler struct {

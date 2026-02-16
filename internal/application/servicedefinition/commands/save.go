@@ -3,10 +3,10 @@ package command
 import (
 	"context"
 
-	modelserviceDefinition "github.com/Logstay/tech-challange-wherehouse-service/internal/domain/servicedefinition"
-	ports "github.com/Logstay/tech-challange-wherehouse-service/internal/ports/servicedefinition"
-	httperr "github.com/Logstay/tech-challange-wherehouse-service/pkg/errors"
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/tracing"
+	modelserviceDefinition "github.com/Logstay/tech-challange-execution-service/internal/domain/servicedefinition"
+	ports "github.com/Logstay/tech-challange-execution-service/internal/ports/servicedefinition"
+	httperr "github.com/Logstay/tech-challange-execution-service/pkg/errors"
+	"github.com/Logstay/tech-challange-execution-service/pkg/tracing"
 )
 
 type SaveServiceDefinitionHandler struct {

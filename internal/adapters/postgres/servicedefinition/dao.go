@@ -7,12 +7,12 @@ import (
 	"regexp"
 	"strings"
 
-	ports "github.com/Logstay/tech-challange-wherehouse-service/internal/ports/servicedefinition"
-	httperr "github.com/Logstay/tech-challange-wherehouse-service/pkg/errors"
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/null"
-	database "github.com/Logstay/tech-challange-wherehouse-service/pkg/postgres"
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/sqlbuilder"
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/tracing"
+	ports "github.com/Logstay/tech-challange-execution-service/internal/ports/servicedefinition"
+	httperr "github.com/Logstay/tech-challange-execution-service/pkg/errors"
+	"github.com/Logstay/tech-challange-execution-service/pkg/null"
+	database "github.com/Logstay/tech-challange-execution-service/pkg/postgres"
+	"github.com/Logstay/tech-challange-execution-service/pkg/sqlbuilder"
+	"github.com/Logstay/tech-challange-execution-service/pkg/tracing"
 	"github.com/jmoiron/sqlx"
 )
 

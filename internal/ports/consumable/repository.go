@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	modelconsumable "github.com/Logstay/tech-challange-wherehouse-service/internal/domain/consumable"
+	modelconsumable "github.com/Logstay/tech-challange-execution-service/internal/domain/consumable"
 )
 
 type Repository interface {

@@ -17,6 +17,6 @@ import (
 func (h *Handler) HealthCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "healthy",
-		"service": "tech-challange-wherehouse-service",
+		"service": "tech-challange-execution-service",
 	})
 }

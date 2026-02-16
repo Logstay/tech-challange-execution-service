@@ -45,6 +45,7 @@ type MessageResponse struct {
 
 // ErrorResponse resposta de erro
 type ErrorResponse struct {
+	Code  int    `json:"code" example:"400"`
 	Error string `json:"error" example:"invalid request"`
 }
 

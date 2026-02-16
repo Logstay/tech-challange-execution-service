@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	modelservicedefinition "github.com/Logstay/tech-challange-wherehouse-service/internal/domain/servicedefinition"
+	modelservicedefinition "github.com/Logstay/tech-challange-execution-service/internal/domain/servicedefinition"
 	"github.com/stretchr/testify/mock"
 )
 

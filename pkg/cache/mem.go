@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	ports "github.com/Logstay/tech-challange-wherehouse-service/internal/ports/cache"
+	ports "github.com/Logstay/tech-challange-execution-service/internal/ports/cache"
 )
 
 type CacheItem struct {

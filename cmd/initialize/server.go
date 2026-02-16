@@ -9,9 +9,9 @@ import (
 	"syscall"
 	"time"
 
-	app "github.com/Logstay/tech-challange-wherehouse-service/internal"
-	handler "github.com/Logstay/tech-challange-wherehouse-service/internal/adapters/http"
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/constant"
+	app "github.com/Logstay/tech-challange-execution-service/internal"
+	handler "github.com/Logstay/tech-challange-execution-service/internal/adapters/http"
+	"github.com/Logstay/tech-challange-execution-service/pkg/constant"
 	"github.com/gin-gonic/gin"
 	"github.com/oklog/run"
 )

@@ -3,8 +3,8 @@ package command
 import (
 	"context"
 
-	ports "github.com/Logstay/tech-challange-wherehouse-service/internal/ports/consumable"
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/tracing"
+	ports "github.com/Logstay/tech-challange-execution-service/internal/ports/consumable"
+	"github.com/Logstay/tech-challange-execution-service/pkg/tracing"
 )
 
 type ListConsumableHandler struct {

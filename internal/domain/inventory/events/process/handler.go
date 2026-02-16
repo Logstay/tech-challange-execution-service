@@ -7,10 +7,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	channels "github.com/Logstay/tech-challange-wherehouse-service/internal/domain/inventory/events"
-	mPorts "github.com/Logstay/tech-challange-wherehouse-service/internal/ports/message-broker"
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/logger"
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/tracing"
+	channels "github.com/Logstay/tech-challange-execution-service/internal/domain/inventory/events"
+	mPorts "github.com/Logstay/tech-challange-execution-service/internal/ports/message-broker"
+	"github.com/Logstay/tech-challange-execution-service/pkg/logger"
+	"github.com/Logstay/tech-challange-execution-service/pkg/tracing"
 )
 
 const (

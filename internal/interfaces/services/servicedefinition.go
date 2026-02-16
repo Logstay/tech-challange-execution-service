@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 
-	sdports "github.com/Logstay/tech-challange-wherehouse-service/internal/ports/servicedefinition"
+	sdports "github.com/Logstay/tech-challange-execution-service/internal/ports/servicedefinition"
 )
 
 type ServiceDefinitionService interface {

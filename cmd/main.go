@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/Logstay/tech-challange-wherehouse-service/cmd/initialize"
+	"github.com/Logstay/tech-challange-execution-service/cmd/initialize"
 )
 
 func main() {

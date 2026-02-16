@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
-	cports "github.com/Logstay/tech-challange-wherehouse-service/internal/ports/consumable"
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/errors"
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/null"
+	cports "github.com/Logstay/tech-challange-execution-service/internal/ports/consumable"
+	"github.com/Logstay/tech-challange-execution-service/pkg/errors"
+	"github.com/Logstay/tech-challange-execution-service/pkg/null"
 	"github.com/gin-gonic/gin"
 )
 

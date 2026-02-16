@@ -3,21 +3,19 @@ package config
 import (
 	"os"
 
-	"github.com/Logstay/tech-challange-wherehouse-service/pkg/logger"
+	"github.com/Logstay/tech-challange-execution-service/pkg/logger"
 	"github.com/caarlos0/env/v11"
 	"github.com/sirupsen/logrus"
 )
 
 type Config struct {
-	Logger      logger.Logger
-	Database    DatabaseConfig
-	Server      ServerConfig
-	Email       EmailConfig
-	Tracer      TracingConfig
-	MercadoPago MercadoPagoConfig
-	Kafka       KafkaConfig
-	NewRelic    NewRelicConfig
-	JWT         JWTConfig
+	Logger   logger.Logger
+	Database DatabaseConfig
+	Server   ServerConfig
+	Tracer   TracingConfig
+	Kafka    KafkaConfig
+	NewRelic NewRelicConfig
+	JWT      JWTConfig
 }
 
 type JWTConfig struct {
@@ -41,19 +39,9 @@ type ServerConfig struct {
 	SwaggerBasePath string `env:"SWAGGER_BASE_PATH,required" envDefault:"/v1"`
 }
 
-type EmailConfig struct {
-	APIKey      string `env:"EMAIL_API_KEY"`
-	SenderName  string `env:"EMAIL_SENDER_NAME"`
-	SenderEmail string `env:"EMAIL_SENDER_EMAIL"`
-}
-
 type TracingConfig struct {
-	ServiceName    string `env:"TRACING_SERVICE_NAME" envDefault:"tech-challange-wherehouse-service"`
+	ServiceName    string `env:"TRACING_SERVICE_NAME" envDefault:"tech-challange-execution-service"`
 	ServiceVersion string `env:"TRACING_SERVICE_VERSION" envDefault:"1.0.0"`
-}
-
-type MercadoPagoConfig struct {
-	AccessToken string `env:"MERCADO_PAGO_ACCESS_TOKEN,required"`
 }
 
 type NewRelicConfig struct {

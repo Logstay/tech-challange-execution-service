@@ -1,7 +1,7 @@
 package http
 
 import (
-	services "github.com/Logstay/tech-challange-wherehouse-service/internal/interfaces/services"
+	services "github.com/Logstay/tech-challange-execution-service/internal/interfaces/services"
 )
 
 type Handler struct {
