@@ -2,19 +2,22 @@ package generatedataset
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	channels "github.com/Logstay/tech-challange-execution-service/internal/domain/inventory/events"
+	cPorts "github.com/Logstay/tech-challange-execution-service/internal/ports/consumable"
+	iPorts "github.com/Logstay/tech-challange-execution-service/internal/ports/inventory"
 	mPorts "github.com/Logstay/tech-challange-execution-service/internal/ports/message-broker"
 	"github.com/Logstay/tech-challange-execution-service/pkg/logger"
 	"github.com/Logstay/tech-challange-execution-service/pkg/tracing"
 )
 
 const (
-	groupID           = "process-billing"
+	groupID           = "inventory"
 	defaultRetryDelay = time.Minute
 	maxRetries        = 3
 	processingTimeout = 30 * time.Second
@@ -29,6 +32,8 @@ type Handler struct {
 	consumer          mPorts.Consumer
 	producer          mPorts.Producer
 	tracer            *tracing.Tracer
+	inventoryDAO      iPorts.DAO
+	consumableDAO     cPorts.DAO
 
 	processedCount atomic.Int64
 	failedCount    atomic.Int64
@@ -38,8 +43,8 @@ type Handler struct {
 	shutdownOnce sync.Once
 }
 
-func New(messageBroker mPorts.MessageBroker, tracer *tracing.Provider, log logger.Logger) (h *Handler, err error) {
-	log.Info("Initializing dataset handler", map[string]any{
+func New(messageBroker mPorts.MessageBroker, tracer *tracing.Provider, log logger.Logger, inventoryDAO iPorts.DAO, consumableDAO cPorts.DAO) (h *Handler, err error) {
+	log.Info("Initializing inventory handler", map[string]any{
 		"group_id":     groupID,
 		"retry_delay":  defaultRetryDelay,
 		"max_retries":  maxRetries,
@@ -51,7 +56,9 @@ func New(messageBroker mPorts.MessageBroker, tracer *tracing.Provider, log logge
 		maxRetries:        maxRetries,
 		processingTimeout: processingTimeout,
 		log:               log,
-		tracer:            tracer.NewTracer("async-generate-dataset"),
+		tracer:            tracer.NewTracer("async-decrease-inventory"),
+		inventoryDAO:      inventoryDAO,
+		consumableDAO:     consumableDAO,
 	}
 
 	if h.consumer, err = messageBroker.NewConsumer(groupID); err != nil {
@@ -67,7 +74,7 @@ func New(messageBroker mPorts.MessageBroker, tracer *tracing.Provider, log logge
 		return nil, fmt.Errorf("failed to create producer: %w", err)
 	}
 
-	log.Info("Dataset handler initialized successfully", nil)
+	log.Info("Inventory handler initialized successfully", nil)
 	return h, nil
 }
 
@@ -115,7 +122,7 @@ func (h *Handler) Handle(ctx context.Context) (err error) {
 }
 
 func (h *Handler) listenQueue(ctx context.Context) (err error) {
-	ch, err := h.consumer.Consume(ctx, channels.BillingCreated, channels.BillingCreatedRetry)
+	ch, err := h.consumer.Consume(ctx, channels.InventoryDecreased, channels.InventoryDecreasedRetry)
 
 	if err != nil {
 		h.log.Error("Failed to start consuming", err)
@@ -123,7 +130,7 @@ func (h *Handler) listenQueue(ctx context.Context) (err error) {
 	}
 
 	h.log.Info("Started listening to queue", map[string]any{
-		"channels": []string{channels.BillingCreated, channels.BillingCreatedRetry},
+		"channels": []string{channels.InventoryDecreased, channels.InventoryDecreasedRetry},
 	})
 
 	for {
@@ -167,7 +174,7 @@ func (h *Handler) handleMessage(ctx context.Context, message mPorts.Message) {
 			"duration_ms": duration.Milliseconds(),
 		})
 
-		if message.ChannelID != channels.BillingCreatedRetry {
+		if message.ChannelID != channels.InventoryDecreasedRetry {
 			h.scheduleRetry(ctx, message, err)
 		} else {
 			h.log.Error("Message failed after retry, giving up", err)
@@ -184,27 +191,42 @@ func (h *Handler) handleMessage(ctx context.Context, message mPorts.Message) {
 
 func (h *Handler) processEvent(ctx context.Context, message mPorts.Message) (err error) {
 	span := h.tracer.GetSpanFromContext(ctx)
+	var consumableID string
 
-	span.AddEvent("processing-dataset-event-start", tracing.Attributes{
+	span.AddEvent("processing-event-start", tracing.Attributes{
 		"channel": message.ChannelID,
 	})
 
-	defer func() {
-		if err != nil {
-			span.AddEvent("processing-dataset-event-failed", tracing.Attributes{
-				"error": err.Error(),
-			})
-		} else {
-			span.AddEvent("processing-dataset-event-success", nil)
-		}
-	}()
-
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case <-time.After(100 * time.Millisecond):
-
+	consumableID, ok := message.Value.(string)
+	if !ok {
+		err = errors.New("invalid message value, expected string but got")
+		span.AddEvent("processing-event-invalid-message", tracing.Attributes{
+			"error": err,
+		})
+		return err
 	}
+
+	consumable, err := h.consumableDAO.Get(ctx, consumableID)
+	if err != nil {
+		h.log.Error("Failed to get consumable", err)
+		span.AddEvent("processing-event-consumable-get-failed", tracing.Attributes{
+			"error": err,
+		})
+		return err
+	}
+
+	err = h.inventoryDAO.Decrease(ctx, iPorts.InventoryDAO{
+		ConsumableID: consumable.ID,
+	})
+	if err != nil {
+		h.log.Error("Failed to decrease inventory", err)
+		span.AddEvent("processing-event-inventory-decrease-failed", tracing.Attributes{
+			"error": err,
+		})
+		return err
+	}
+
+	span.AddEvent("processing-event-success", nil)
 
 	return nil
 }
@@ -241,7 +263,7 @@ func (h *Handler) sendToRetryQueue(ctx context.Context, message mPorts.Message, 
 	retryCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	err := h.producer.Produce(retryCtx, channels.BillingCreatedRetry, message)
+	err := h.producer.Produce(retryCtx, channels.InventoryDecreasedRetry, message)
 	if err != nil {
 		h.log.Error("Failed to send message to retry queue", err)
 		span.AddEvent("retry-queue-send-failed", tracing.Attributes{

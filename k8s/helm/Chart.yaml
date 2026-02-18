@@ -1,6 +1,6 @@
 apiVersion: v2
 name: tech-challange-execution-service
-description: A Helm chart for Tech Challenge Billing Service
+description: Tech Challenge Execution Service - Serviço de execução e gerenciamento de consumíveis com Kafka
 
 type: application
 
@@ -12,3 +12,5 @@ keywords:
   - backend
   - api
   - tech-challenge
+  - kafka
+  - execution-service

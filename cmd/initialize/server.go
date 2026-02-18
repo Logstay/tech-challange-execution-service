@@ -41,6 +41,7 @@ func (sm *ServerManager) setupHTTPServer() {
 		sm.app.Context,
 		sm.app.ServiceFactory,
 		sm.app.Config,
+		sm.app.TracingProvider,
 	).GetRouter()
 
 	sm.httpServer = &http.Server{

@@ -16,13 +16,13 @@ data:
   DB_SSLMODE: {{ .Values.app.env.DB_SSLMODE | default "disable" | quote }}
   PORT: {{ .Values.app.env.PORT | default "8080" | quote }}
   GIN_MODE: {{ .Values.app.env.GIN_MODE | default "release" | quote }}
-  NEW_RELIC_APP_NAME: {{ .Values.app.env.NEW_RELIC_APP_NAME | default "tech-challenge-app-1" | quote }}
-  AUTH_LAMBDA_HOST: {{ .Values.app.auth.lambda_host | quote }}
-  TRACE_SERVICE_VERSION: {{ .Values.app.env.TRACE_SERVICE_VERSION | default "1.0.0" | quote }}
-  TRACE_SERVICE_NAME: {{ .Values.app.env.TRACE_SERVICE_NAME | default "tech-service" | quote }}
+  NEW_RELIC_APP_NAME: {{ .Values.app.env.NEW_RELIC_APP_NAME | default "tech-challenge-execution-service" | quote }}
+  TRACING_SERVICE_VERSION: {{ .Values.app.env.TRACING_SERVICE_VERSION | default "1.0.0" | quote }}
+  TRACING_SERVICE_NAME: {{ .Values.app.env.TRACING_SERVICE_NAME | default "tech-challange-execution-service" | quote }}
   OTEL_EXPORTER_OTLP_ENDPOINT: {{ .Values.app.env.OTEL_EXPORTER_OTLP_ENDPOINT | default "http://localhost:4318" | quote }}
   OTEL_METRICS_EXPORT: {{ .Values.app.env.OTEL_METRICS_EXPORT | default "otlp" | quote }}
-  EMAIL_SENDER_NAME: {{ .Values.app.env.EMAIL_SENDER_NAME | default "Tech Challenge Project" | quote }}
-  EMAIL_SENDER_EMAIL: {{ .Values.app.env.EMAIL_SENDER_EMAIL | default "MS_OpILU7@test-2p0347z2r3ylzdrn.mlsender.net" | quote }}
   SWAGGER_BASE_PATH: {{ .Values.app.env.SWAGGER_BASE_PATH | default "/v1" | quote }}
+  KAFKA_PRODUCER_HOSTS: {{ .Values.app.kafka.producer_hosts | default "" | quote }}
+  KAFKA_CONSUMER_HOSTS: {{ .Values.app.kafka.consumer_hosts | default "" | quote }}
+  KAFKA_USERNAME: {{ .Values.app.kafka.username | default "" | quote }}
 {{- end }}

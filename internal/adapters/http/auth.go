@@ -11,8 +11,14 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
+type ErrorResponse struct {
+	Code  int    `json:"code" example:"400"`
+	Error string `json:"error" example:"Descrição do erro"`
+}
+
 func AuthzWithConfig(cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
+
 		headerAuth := c.GetHeader(constant.Authorization)
 		if headerAuth == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, ErrorResponse{
@@ -86,12 +92,4 @@ func ValidateTokenWithConfig(signedToken string, cfg *config.Config) error {
 	}
 
 	return nil
-}
-
-func ValidateToken(signedToken string) error {
-	cfg, err := config.LoadConfig()
-	if err != nil {
-		return err
-	}
-	return ValidateTokenWithConfig(signedToken, cfg)
 }

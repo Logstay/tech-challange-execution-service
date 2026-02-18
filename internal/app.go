@@ -10,7 +10,7 @@ import (
 	servicedefinitiondao "github.com/Logstay/tech-challange-execution-service/internal/adapters/postgres/servicedefinition"
 	consumableservice "github.com/Logstay/tech-challange-execution-service/internal/application/consumable"
 	servicedefinitionservice "github.com/Logstay/tech-challange-execution-service/internal/application/servicedefinition"
-	eventprocess "github.com/Logstay/tech-challange-execution-service/internal/domain/inventory/events/process"
+	eventdecrease "github.com/Logstay/tech-challange-execution-service/internal/domain/inventory/events/decrease"
 	cPorts "github.com/Logstay/tech-challange-execution-service/internal/ports/cache"
 	database "github.com/Logstay/tech-challange-execution-service/pkg/postgres"
 	"github.com/Logstay/tech-challange-execution-service/pkg/tracing"
@@ -79,14 +79,18 @@ func (b *ServiceBuilder) StartEvent(ctx context.Context) error {
 		return err
 	}
 
-	processBillingEvent, err := eventprocess.New(broker, b.tracer, b.cfg.Logger)
+	db := b.dbFactory.NewConnection()
+	consumableDAO := consumabledao.NewDAO(db, b.tracer)
+	inventoryDAO := inventorydao.NewDAO(db, b.tracer)
+
+	decreaseInventoryEvent, err := eventdecrease.New(broker, b.tracer, b.cfg.Logger, inventoryDAO, consumableDAO)
 	if err != nil {
 		return err
 	}
 
 	go func() {
-		if err := processBillingEvent.Handle(ctx); err != nil {
-			b.cfg.Logger.Error("Error starting billing event processor", err)
+		if err := decreaseInventoryEvent.Handle(ctx); err != nil {
+			b.cfg.Logger.Error("Error starting decrease inventory event processor", err)
 		}
 	}()
 

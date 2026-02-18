@@ -11,7 +11,7 @@ const docTemplate = `{
         "title": "{{.Title}}",
         "contact": {
             "name": "Kaique Moreira",
-            "url": "https://github.com/Logstay/tech-challange-wherehouse-service",
+            "url": "https://github.com/Logstay/tech-challange-execution-service",
             "email": "kaiquepng@gmail.com"
         },
         "license": {
@@ -25,6 +25,11 @@ const docTemplate = `{
     "paths": {
         "/consumables": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Retorna uma lista paginada de consumíveis",
                 "produces": [
                     "application/json"
@@ -36,7 +41,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "default": 1,
+                        "default": 0,
                         "description": "Número da página",
                         "name": "page",
                         "in": "query"
@@ -62,6 +67,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/http.PaginatedResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -71,6 +82,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Cria um novo consumível no estoque",
                 "consumes": [
                     "application/json"
@@ -106,6 +122,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/http.ErrorResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -117,6 +139,11 @@ const docTemplate = `{
         },
         "/consumables/{uid}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Retorna um consumível pelo seu identificador único",
                 "produces": [
                     "application/json"
@@ -141,6 +168,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/http.GetConsumableResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -156,6 +189,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Atualiza os dados de um consumível existente",
                 "consumes": [
                     "application/json"
@@ -198,6 +236,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/http.ErrorResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -213,6 +257,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Remove um consumível pelo seu identificador único",
                 "produces": [
                     "application/json"
@@ -235,6 +284,12 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/http.MessageResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
                         }
                     },
                     "404": {
@@ -277,6 +332,11 @@ const docTemplate = `{
         },
         "/service-definitions": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Retorna uma lista paginada de definições de serviço",
                 "produces": [
                     "application/json"
@@ -288,7 +348,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "default": 1,
+                        "default": 0,
                         "description": "Número da página",
                         "name": "page",
                         "in": "query"
@@ -314,6 +374,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/http.PaginatedResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -323,6 +389,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Cria uma nova definição de serviço",
                 "consumes": [
                     "application/json"
@@ -358,6 +429,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/http.ErrorResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -369,6 +446,11 @@ const docTemplate = `{
         },
         "/service-definitions/{uid}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Retorna uma definição de serviço pelo seu identificador único",
                 "produces": [
                     "application/json"
@@ -393,6 +475,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/http.GetServiceDefinitionResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -408,6 +496,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Atualiza os dados de uma definição de serviço existente",
                 "consumes": [
                     "application/json"
@@ -450,6 +543,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/http.ErrorResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -465,6 +564,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Remove uma definição de serviço pelo seu identificador único",
                 "produces": [
                     "application/json"
@@ -489,6 +593,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/http.MessageResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -509,6 +619,10 @@ const docTemplate = `{
         "http.ErrorResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 400
+                },
                 "error": {
                     "type": "string",
                     "example": "invalid request"
@@ -520,7 +634,7 @@ const docTemplate = `{
             "properties": {
                 "code": {
                     "type": "string",
-                    "example": "CAF-001"
+                    "example": "KIT-001"
                 },
                 "created_at": {
                     "type": "string",
@@ -528,15 +642,15 @@ const docTemplate = `{
                 },
                 "description": {
                     "type": "string",
-                    "example": "Café arábica torrado"
+                    "example": "kit de embreagem completo para carros de passeio"
                 },
                 "name": {
                     "type": "string",
-                    "example": "Café Especial"
+                    "example": "Kit Embreagem"
                 },
                 "price": {
                     "type": "number",
-                    "example": 29.9
+                    "example": 100
                 },
                 "quantity": {
                     "type": "integer",
@@ -619,19 +733,19 @@ const docTemplate = `{
             "properties": {
                 "code": {
                     "type": "string",
-                    "example": "CAF-001"
+                    "example": "KIT-001"
                 },
                 "description": {
                     "type": "string",
-                    "example": "Café arábica torrado"
+                    "example": "kit de embreagem completo para carros de passeio"
                 },
                 "name": {
                     "type": "string",
-                    "example": "Café Especial"
+                    "example": "Kit Embreagem"
                 },
                 "price": {
                     "type": "number",
-                    "example": 29.9
+                    "example": 100
                 },
                 "quantity": {
                     "type": "integer",
@@ -669,15 +783,15 @@ const docTemplate = `{
             "properties": {
                 "description": {
                     "type": "string",
-                    "example": "Café arábica torrado premium"
+                    "example": "kit de embreagem completo para carros de passeio"
                 },
                 "name": {
                     "type": "string",
-                    "example": "Café Especial Premium"
+                    "example": "Kit Embreagem Premium"
                 },
                 "price": {
                     "type": "number",
-                    "example": 39.9
+                    "example": 150
                 }
             }
         },
@@ -705,7 +819,7 @@ const docTemplate = `{
     },
     "securityDefinitions": {
         "BearerAuth": {
-            "description": "Exemplo: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'",
+            "description": "Digite apenas o token JWT (sem 'Bearer '). Exemplo: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"
@@ -719,7 +833,7 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "",
 	BasePath:         "/v1",
 	Schemes:          []string{},
-	Title:            "Tech Challenge - Wherehouse Service",
+	Title:            "Tech Challenge - ExecutionService",
 	Description:      "Microsserviço de estoque e catálogo de serviços do Tech Challenge - Fase 4 do 12SOAT FIAP.\n\n## 🚀 Funcionalidades\n- **Consumíveis**: CRUD completo de peças e itens de estoque\n- **Definições de Serviço**: Catálogo de serviços disponíveis com precificação\n- **Integração via Eventos**: Consumo de eventos Kafka para atualização de estoque",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

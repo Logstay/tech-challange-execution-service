@@ -83,24 +83,39 @@ spec:
               name: app-secret
               key: JWT_SECRET
 
-        # Lambda Auth Configuration
-        - name: AUTH_LAMBDA_HOST
+        # Kafka Configuration (execution-service specific)
+        - name: KAFKA_PRODUCER_HOSTS
           valueFrom:
             configMapKeyRef:
               name: app-config
-              key: AUTH_LAMBDA_HOST
+              key: KAFKA_PRODUCER_HOSTS
+        - name: KAFKA_CONSUMER_HOSTS
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: KAFKA_CONSUMER_HOSTS
+        - name: KAFKA_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: KAFKA_USERNAME
+        - name: KAFKA_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: KAFKA_PASSWORD
 
         # Tracing Configuration
-        - name: TRACE_SERVICE_VERSION
+        - name: TRACING_SERVICE_VERSION
           valueFrom:
             configMapKeyRef:
               name: app-config
-              key: TRACE_SERVICE_VERSION
-        - name: TRACE_SERVICE_NAME
+              key: TRACING_SERVICE_VERSION
+        - name: TRACING_SERVICE_NAME
           valueFrom:
             configMapKeyRef:
               name: app-config
-              key: TRACE_SERVICE_NAME
+              key: TRACING_SERVICE_NAME
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
           valueFrom:
             configMapKeyRef:
@@ -111,23 +126,6 @@ spec:
             configMapKeyRef:
               name: app-config
               key: OTEL_METRICS_EXPORT
-
-        # Email Configuration
-        - name: EMAIL_SENDER_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: app-config
-              key: EMAIL_SENDER_NAME
-        - name: EMAIL_SENDER_EMAIL
-          valueFrom:
-            configMapKeyRef:
-              name: app-config
-              key: EMAIL_SENDER_EMAIL
-        - name: EMAIL_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: app-secret
-              key: EMAIL_API_KEY
 
         # New Relic Configuration (Optional)
         - name: NEW_RELIC_APP_NAME

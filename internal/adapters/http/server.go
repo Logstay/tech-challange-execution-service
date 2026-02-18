@@ -11,6 +11,7 @@ import (
 	_ "github.com/Logstay/tech-challange-execution-service/docs"
 	services "github.com/Logstay/tech-challange-execution-service/internal/interfaces/services"
 	"github.com/Logstay/tech-challange-execution-service/pkg/constant"
+	"github.com/Logstay/tech-challange-execution-service/pkg/tracing"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -21,6 +22,7 @@ type Server struct {
 	handler *Handler
 	router  *gin.Engine
 	cfg     *config.Config
+	tracer  *tracing.Tracer
 }
 
 // @title			Tech Challenge - ExecutionService
@@ -40,12 +42,13 @@ type Server struct {
 // @license.url				https://opensource.org/licenses/MIT
 //
 // @BasePath					/v1
+//
 // @securityDefinitions.apikey	BearerAuth
 // @in							header
 // @name						Authorization
-// @description				Exemplo: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
-func NewServer(ctx context.Context, services services.ServiceFactory, cfg *config.Config) *Server {
-	handler := NewHandler(services)
+// @description				Digite apenas o token JWT (sem 'Bearer '). Exemplo: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+func NewServer(ctx context.Context, services services.ServiceFactory, cfg *config.Config, tracer *tracing.Provider) *Server {
+	handler := NewHandler(services, tracer)
 
 	server := &Server{
 		handler: handler,

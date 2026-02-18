@@ -148,7 +148,7 @@ jobs:
           # Deploy application using Helm
           echo "🚀 Running Helm deployment..."
 
-          # Set database configuration from GitHub secrets (same pattern as database.yml)
+          # Set database configuration from GitHub secrets
           DB_HOST="${{ secrets.DB_HOST }}"
           DB_PORT="${{ secrets.DB_PORT }}"
           DB_NAME="${{ secrets.DB_NAME }}"
@@ -165,15 +165,13 @@ jobs:
           OTEL_EXPORTER_OTLP_ENDPOINT="${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT }}"
           OTEL_METRICS_EXPORT="${{ secrets.OTEL_METRICS_EXPORT }}"
 
-          # Email configuration
-          EMAIL_SENDER_NAME="${{ secrets.EMAIL_SENDER_NAME }}"
-          EMAIL_SENDER_EMAIL="${{ secrets.EMAIL_SENDER_EMAIL }}"
-          EMAIL_API_KEY="${{ secrets.EMAIL_API_KEY }}"
+          # Kafka configuration (execution-service specific)
+          KAFKA_PRODUCER_HOSTS="${{ secrets.KAFKA_PRODUCER_HOSTS }}"
+          KAFKA_CONSUMER_HOSTS="${{ secrets.KAFKA_CONSUMER_HOSTS }}"
+          KAFKA_USERNAME="${{ secrets.KAFKA_USERNAME }}"
+          KAFKA_PASSWORD="${{ secrets.KAFKA_PASSWORD }}"
 
-          # Auth Lambda configuration
-          AUTH_LAMBDA_HOST="${{ secrets.AUTH_LAMBDA_HOST }}"
-
-          if ! helm upgrade --install tech-challenge-${{ inputs.environment || 'prod' }} ./k8s/helm \
+          if ! helm upgrade --install tech-challenge-execution-${{ inputs.environment || 'prod' }} ./k8s/helm \
             --namespace "$NAMESPACE" \
             --set global.namespace="$NAMESPACE" \
             --set app.enabled=true \
@@ -196,10 +194,10 @@ jobs:
             --set app.env.TRACE_SERVICE_NAME="$TRACE_SERVICE_NAME" \
             --set app.env.OTEL_EXPORTER_OTLP_ENDPOINT="$OTEL_EXPORTER_OTLP_ENDPOINT" \
             --set app.env.OTEL_METRICS_EXPORT="$OTEL_METRICS_EXPORT" \
-            --set app.env.EMAIL_SENDER_NAME="$EMAIL_SENDER_NAME" \
-            --set app.env.EMAIL_SENDER_EMAIL="$EMAIL_SENDER_EMAIL" \
-            --set app.secrets.EMAIL_API_KEY="$EMAIL_API_KEY" \
-            --set app.auth.lambda_host="$AUTH_LAMBDA_HOST" \
+            --set app.kafka.producer_hosts="$KAFKA_PRODUCER_HOSTS" \
+            --set app.kafka.consumer_hosts="$KAFKA_CONSUMER_HOSTS" \
+            --set app.kafka.username="$KAFKA_USERNAME" \
+            --set app.secrets.KAFKA_PASSWORD="$KAFKA_PASSWORD" \
             --wait \
             --timeout=600s \
             --debug; then
@@ -213,7 +211,7 @@ jobs:
 
           # Verify deployment was successful
           echo "🔍 Verifying Helm deployment..."
-          helm status tech-challenge-${{ inputs.environment || 'prod' }} -n "$NAMESPACE"
+          helm status tech-challenge-execution-${{ inputs.environment || 'prod' }} -n "$NAMESPACE"
 
           echo "🔍 Checking deployed resources..."
           kubectl get all -n "$NAMESPACE"
@@ -248,7 +246,7 @@ jobs:
           echo "kubectl get pods -n ${{ env.K8S_NAMESPACE }}-${{ inputs.environment || 'prod' }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "# Check application logs" >> $GITHUB_STEP_SUMMARY
-          echo "kubectl logs -l app=tech-challenge-app -n ${{ env.K8S_NAMESPACE }}-${{ inputs.environment || 'prod' }}" >> $GITHUB_STEP_SUMMARY
+          echo "kubectl logs -l app=tech-challange-execution-service -n ${{ env.K8S_NAMESPACE }}-${{ inputs.environment || 'prod' }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "# Port forward to access app" >> $GITHUB_STEP_SUMMARY
           echo "kubectl port-forward svc/app-service 8080:80 -n ${{ env.K8S_NAMESPACE }}-${{ inputs.environment || 'prod' }}" >> $GITHUB_STEP_SUMMARY
