@@ -1,0 +1,98 @@
+name: Complete CI/CD Pipeline Orchestrator
+
+on:
+  push:
+    branches:
+      - homol
+      - prod
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy"
+        required: true
+        type: choice
+        options:
+          - prod
+        default: "prod"
+      deploy_infrastructure:
+        description: "Deploy Terraform infrastructure"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  id-token: write
+  contents: read
+  security-events: write
+  actions: read
+  issues: write
+  pull-requests: write
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY}}
+  GO_VERSION: ${{ secrets.GO_VERSION }}
+
+jobs:
+  code-quality:
+    name: Code Quality & Security
+    uses: ./.github/workflows/code-quality.yml
+    secrets: inherit
+
+  build-and-scan:
+    name: Build & Container Security
+    needs: [code-quality]
+    if: always() && needs.code-quality.result == 'success'
+    uses: ./.github/workflows/build.yml
+    secrets: inherit
+
+  application-deploy:
+    name: Application Deploy
+    needs: [build-and-scan]
+    if: |
+      always() &&
+      needs.build-and-scan.result == 'success' &&
+      github.event_name == 'push'
+    uses: ./.github/workflows/application-deploy.yml
+    with:
+      environment: ${{ (startsWith(github.ref, 'refs/tags/') && 'prod') || (github.ref == 'refs/heads/main' && 'prod') || 'prod' }}
+      image_tag: ${{ needs.build-and-scan.outputs.version }}
+    secrets: inherit
+
+  deployment-report:
+    name: Deployment Report
+    runs-on: ubuntu-latest
+    needs: [code-quality, build-and-scan, application-deploy]
+    if: always()
+    steps:
+      - name: 📊 Generate comprehensive report
+        run: |
+          echo "# 🚀 Release Deployment Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📋 Pipeline Execution Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Stage | Status | Details |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|---------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 📝 Code Quality | ${{ needs.code-quality.result == 'success' && '✅ Success' || needs.code-quality.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} | Format, Lint, Tests, Security |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔨 Build & Security | ${{ needs.build-and-scan.result == 'success' && '✅ Success' || needs.build-and-scan.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} | Build, Container Scan, ECR Push |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🚀 Application Deploy | ${{ needs.application-deploy.result == 'success' && '✅ Success' || needs.application-deploy.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} | Helm Deploy, Health Check |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🎯 Deployment Information" >> $GITHUB_STEP_SUMMARY
+          echo "- **Ref**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Event**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Actor**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: ${{ (startsWith(github.ref, 'refs/tags/') && 'prod (release)') || (github.ref == 'refs/heads/main' && 'prod (main branch)') }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🔗 Deployment Strategy" >> $GITHUB_STEP_SUMMARY
+          echo "- 📝 **Code Quality**: Sempre executa para validação" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔨 **Build & Security**: Executa em push para homol/prod" >> $GITHUB_STEP_SUMMARY
+          echo "- 🗄️ **Database**: Valida RDS e executa migrações" >> $GITHUB_STEP_SUMMARY
+          echo "- 🚀 **Application**: Deploy da aplicação no EKS" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🛠️ Como Fazer Deploy" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo "# Deploy automático em push:" >> $GITHUB_STEP_SUMMARY
+          echo "git push origin homol      # Deploy para homologação" >> $GITHUB_STEP_SUMMARY
+          echo "git push origin prod       # Deploy para produção" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY

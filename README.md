@@ -1,1 +1,1 @@
-tech-challange-wherehouse-service
+tech-challange-execution-service

@@ -1,0 +1,78 @@
+package config
+
+import (
+	"os"
+
+	"github.com/Logstay/tech-challange-execution-service/pkg/logger"
+	"github.com/caarlos0/env/v11"
+	"github.com/sirupsen/logrus"
+)
+
+type Config struct {
+	Logger   logger.Logger
+	Database DatabaseConfig
+	Server   ServerConfig
+	Tracer   TracingConfig
+	Kafka    KafkaConfig
+	NewRelic NewRelicConfig
+	JWT      JWTConfig
+}
+
+type JWTConfig struct {
+	Secret string `env:"JWT_SECRET,required"`
+}
+
+type DatabaseConfig struct {
+	Host     string `env:"DB_HOST"`
+	Port     int    `env:"DB_PORT"`
+	User     string `env:"DB_USER"`
+	Password string `env:"DB_PASSWORD"`
+	Database string `env:"DB_NAME"`
+	SSLMode  string `env:"DB_SSLMODE"`
+	PoolMin  int    `env:"POOL_MIN" envDefault:"1"`
+	PoolMax  int    `env:"POOL_MAX" envDefault:"10"`
+}
+
+type ServerConfig struct {
+	Host            string `env:"REST_SERVER_HOST,required" envDefault:""`
+	Port            string `env:"REST_SERVER_PORT,required" envDefault:"8080"`
+	SwaggerBasePath string `env:"SWAGGER_BASE_PATH,required" envDefault:"/v1"`
+}
+
+type TracingConfig struct {
+	ServiceName    string `env:"TRACING_SERVICE_NAME" envDefault:"tech-challange-execution-service"`
+	ServiceVersion string `env:"TRACING_SERVICE_VERSION" envDefault:"1.0.0"`
+}
+
+type NewRelicConfig struct {
+	AppName    string `env:"NEW_RELIC_APP_NAME"`
+	LicenseKey string `env:"NEW_RELIC_LICENSE_KEY"`
+}
+
+type KafkaConfig struct {
+	ProducerHosts string `env:"KAFKA_PRODUCER_HOSTS,required"`
+	ConsumerHosts string `env:"KAFKA_CONSUMER_HOSTS,required"`
+	Username      string `env:"KAFKA_USERNAME"`
+	Password      string `env:"KAFKA_PASSWORD"`
+}
+
+func LoadConfig() (*Config, error) {
+	cfg := &Config{}
+	if err := env.Parse(cfg); err != nil {
+		return nil, err
+	}
+
+	cfg.initLogger()
+
+	return cfg, nil
+}
+
+func (c *Config) initLogger() error {
+	baseLogger := logrus.New()
+	baseLogger.SetFormatter(&logrus.JSONFormatter{})
+	baseLogger.SetOutput(os.Stdout)
+	baseLogger.SetLevel(logrus.InfoLevel)
+
+	c.Logger = logger.NewLogger(c.Tracer.ServiceName, baseLogger)
+	return nil
+}

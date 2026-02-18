@@ -1,0 +1,118 @@
+name: Build & Container Security
+
+"on":
+  workflow_call:
+    outputs:
+      version:
+        description: Generated version
+        value: ${{ jobs.build.outputs.version }}
+      image-uri:
+        description: Built Docker image URI
+        value: ${{ jobs.build.outputs.image-uri }}
+
+permissions:
+  id-token: write
+  contents: read
+  security-events: write
+
+env:
+  GO_VERSION: ${{ secrets.GO_VERSION || '1.21' }}
+  AWS_REGION: ${{ secrets.AWS_REGION || 'sa-east-1' }}
+  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+
+jobs:
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      image-uri: ${{ steps.build.outputs.image-uri }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Build application
+        run: |
+          echo "🔨 Building Go application..."
+          make build
+          echo "✅ Application built successfully"
+
+      - name: Generate version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == refs/tags/* ]]; then
+            # Use tag as version for releases
+            VERSION=${GITHUB_REF#refs/tags/}
+            echo "🏷️ Using tag version: $VERSION"
+          else
+            # Generate version for other events
+            VERSION="v$(date +%Y%m%d)-${GITHUB_SHA::8}"
+            echo "🏷️ Generated version: $VERSION"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Final version: $VERSION"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_DEPLOY_ROLE }}
+          role-session-name: ${{ secrets.AWS_DEPLOY_ROLE }}
+
+      - name: Login to Amazon ECR
+        if: github.event_name == 'push'
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: 🔍 Create ECR repository if not exists
+        if: github.event_name == 'push'
+        run: |
+          aws ecr describe-repositories --repository-names $ECR_REPOSITORY --region $AWS_REGION || \
+          aws ecr create-repository --repository-name $ECR_REPOSITORY --region $AWS_REGION
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker image
+        if: github.event_name == 'push'
+        id: build
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ steps.version.outputs.version }}
+          LATEST_TAG: latest
+        run: |
+          IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          LATEST_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$LATEST_TAG"
+
+          echo "🔨 Building Docker image..."
+          docker build -t "$IMAGE_URI" -t "$LATEST_URI" .
+
+          echo "image-uri=$IMAGE_URI" >> $GITHUB_OUTPUT
+          echo "✅ Docker image built: $IMAGE_URI"
+
+      - name: Push Docker image to ECR
+        if: github.event_name == 'push'
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ steps.version.outputs.version }}
+          LATEST_TAG: latest
+        run: |
+          IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          LATEST_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$LATEST_TAG"
+
+          echo "📤 Pushing Docker image to ECR..."
+          docker push "$IMAGE_URI"
+          docker push "$LATEST_URI"
+
+          echo "✅ Image pushed successfully: $IMAGE_URI"

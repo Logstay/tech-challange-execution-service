@@ -1,0 +1,157 @@
+{
+    "Tech Challenge Repository": {
+        "prefix": "tc-repo",
+        "body": [
+            "type ${1:Entity}Repository interface {",
+            "\tCreate(ctx context.Context, entity *model.${1:Entity}) (*model.${1:Entity}, error)",
+            "\tFindByID(ctx context.Context, id string) (*model.${1:Entity}, error)",
+            "\tFindAll(ctx context.Context, params ports.FindAllParams) ([]*model.${1:Entity}, error)",
+            "\tUpdate(ctx context.Context, entity *model.${1:Entity}) (*model.${1:Entity}, error)",
+            "\tDelete(ctx context.Context, id string) error",
+            "}"
+        ],
+        "description": "Template para Repository interface"
+    },
+    "Tech Challenge Service": {
+        "prefix": "tc-service",
+        "body": [
+            "type ${1:Entity}Service interface {",
+            "\tCreate(ctx context.Context, cmd commands.Create${1:Entity}) (*model.${1:Entity}, error)",
+            "\tFindByID(ctx context.Context, query queries.FindBy${1:Entity}ID) (*model.${1:Entity}, error)",
+            "\tFindAll(ctx context.Context, query queries.FindAll${1:Entity}) ([]*model.${1:Entity}, error)",
+            "\tUpdate(ctx context.Context, cmd commands.Update${1:Entity}) (*model.${1:Entity}, error)",
+            "\tDelete(ctx context.Context, cmd commands.Delete${1:Entity}) error",
+            "}"
+        ],
+        "description": "Template para Service interface"
+    },
+    "Tech Challenge Handler": {
+        "prefix": "tc-handler",
+        "body": [
+            "func (h *${1:Entity}Handler) Create${1:Entity}(c *gin.Context) {",
+            "\tctx, span := h.tracer.Start(c.Request.Context(), \"handler.Create${1:Entity}\")",
+            "\tdefer span.End()",
+            "",
+            "\tvar req Create${1:Entity}Request",
+            "\tif err := c.ShouldBindJSON(&req); err != nil {",
+            "\t\tspan.RecordError(err)",
+            "\t\tc.JSON(http.StatusBadRequest, gin.H{\"error\": err.Error()})",
+            "\t\treturn",
+            "\t}",
+            "",
+            "\tcmd := commands.Create${1:Entity}{",
+            "\t\t// Map request to command",
+            "\t}",
+            "",
+            "\tentity, err := h.service.Create(ctx, cmd)",
+            "\tif err != nil {",
+            "\t\tspan.RecordError(err)",
+            "\t\tc.JSON(http.StatusInternalServerError, gin.H{\"error\": err.Error()})",
+            "\t\treturn",
+            "\t}",
+            "",
+            "\tresponse := ${1:Entity}Response{",
+            "\t\t// Map entity to response",
+            "\t}",
+            "",
+            "\tc.JSON(http.StatusCreated, response)",
+            "}"
+        ],
+        "description": "Template para Handler de criação"
+    },
+    "Tech Challenge Test": {
+        "prefix": "tc-test",
+        "body": [
+            "func Test${1:FunctionName}(t *testing.T) {",
+            "\t// Given",
+            "\t${2:// arrange}",
+            "",
+            "\t// When",
+            "\t${3:// act}",
+            "",
+            "\t// Then",
+            "\t${4:// assert}",
+            "\trequire.NoError(t, err)",
+            "\tassert.NotNil(t, result)",
+            "}"
+        ],
+        "description": "Template para testes unitários"
+    },
+    "Tech Challenge Error Handling": {
+        "prefix": "tc-error",
+        "body": [
+            "if err != nil {",
+            "\tspan.RecordError(err)",
+            "\tspan.SetStatus(codes.Error, err.Error())",
+            "\treturn ${1:nil, }err",
+            "}"
+        ],
+        "description": "Template para tratamento de erro com tracing"
+    },
+    "Tech Challenge Tracer": {
+        "prefix": "tc-tracer",
+        "body": [
+            "ctx, span := ${1:tracer}.Start(ctx, \"${2:operation.name}\")",
+            "defer span.End()"
+        ],
+        "description": "Template para iniciar span de tracing"
+    },
+    "Tech Challenge Model": {
+        "prefix": "tc-model",
+        "body": [
+            "type ${1:Entity} struct {",
+            "\tID        string    `json:\"id\" db:\"id\"`",
+            "\tCreatedAt time.Time `json:\"created_at\" db:\"created_at\"`",
+            "\tUpdatedAt time.Time `json:\"updated_at\" db:\"updated_at\"`",
+            "\t${2:// Add specific fields}",
+            "}",
+            "",
+            "func (e *${1:Entity}) Validate() error {",
+            "\t${3:// Add validation logic}",
+            "\treturn nil",
+            "}"
+        ],
+        "description": "Template para entidade de domínio"
+    },
+    "Tech Challenge SQL Builder": {
+        "prefix": "tc-sql",
+        "body": [
+            "query := sqlbuilder.NewSelect()",
+            "query.Select(\"${1:columns}\")",
+            "query.From(\"${2:table}\")",
+            "query.Where(\"${3:condition} = ?\", ${4:value})",
+            "",
+            "sql, args := query.Build()",
+            "${5:// Execute query}"
+        ],
+        "description": "Template para SQL Builder"
+    },
+    "Tech Challenge Command": {
+        "prefix": "tc-command",
+        "body": [
+            "type ${1:Action}${2:Entity} struct {",
+            "\t${3:// Command fields}",
+            "}",
+            "",
+            "func (cmd ${1:Action}${2:Entity}) Validate() error {",
+            "\t${4:// Add validation logic}",
+            "\treturn nil",
+            "}"
+        ],
+        "description": "Template para Commands (CQRS)"
+    },
+    "Tech Challenge Query": {
+        "prefix": "tc-query",
+        "body": [
+            "type ${1:Action}${2:Entity} struct {",
+            "\t${3:// Query parameters}",
+            "}",
+            "",
+            "func (query ${1:Action}${2:Entity}) Validate() error {",
+            "\t${4:// Add validation logic}",
+            "\treturn nil",
+            "}"
+        ],
+        "description": "Template para Queries (CQRS)"
+    }
+}
