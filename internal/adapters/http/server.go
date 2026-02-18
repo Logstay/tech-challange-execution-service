@@ -8,7 +8,6 @@ import (
 
 	"github.com/Logstay/tech-challange-execution-service/config"
 	"github.com/Logstay/tech-challange-execution-service/docs"
-	_ "github.com/Logstay/tech-challange-execution-service/docs"
 	services "github.com/Logstay/tech-challange-execution-service/internal/interfaces/services"
 	"github.com/Logstay/tech-challange-execution-service/pkg/constant"
 	"github.com/Logstay/tech-challange-execution-service/pkg/tracing"
@@ -22,7 +21,6 @@ type Server struct {
 	handler *Handler
 	router  *gin.Engine
 	cfg     *config.Config
-	tracer  *tracing.Tracer
 }
 
 // @title			Tech Challenge - ExecutionService
@@ -57,6 +55,24 @@ func NewServer(ctx context.Context, services services.ServiceFactory, cfg *confi
 
 	server.setupRouter()
 	return server
+}
+
+func (s *Server) GetRouter() *gin.Engine {
+	return s.router
+}
+
+func (s *Server) Start() error {
+	addr := fmt.Sprintf("%s:%s", s.cfg.Server.Host, s.cfg.Server.Port)
+
+	server := &http.Server{
+		Addr:         addr,
+		Handler:      s.router,
+		WriteTimeout: time.Second * constant.ServerWriteReadTimeout,
+		ReadTimeout:  time.Second * constant.ServerWriteReadTimeout,
+		IdleTimeout:  time.Second * constant.ServerIdleTimeout,
+	}
+
+	return server.ListenAndServe()
 }
 
 func (s *Server) setupRouter() {
@@ -102,22 +118,4 @@ func (s *Server) setupRouter() {
 	}
 
 	s.router = router
-}
-
-func (s *Server) Start() error {
-	addr := fmt.Sprintf("%s:%s", s.cfg.Server.Host, s.cfg.Server.Port)
-
-	server := &http.Server{
-		Addr:         addr,
-		Handler:      s.router,
-		WriteTimeout: time.Second * constant.ServerWriteReadTimeout,
-		ReadTimeout:  time.Second * constant.ServerWriteReadTimeout,
-		IdleTimeout:  time.Second * constant.ServerIdleTimeout,
-	}
-
-	return server.ListenAndServe()
-}
-
-func (s *Server) GetRouter() *gin.Engine {
-	return s.router
 }

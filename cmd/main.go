@@ -26,13 +26,13 @@ func main() {
 	serverManager, err := initialize.NewServerManager(ctx, app)
 	if err != nil {
 		app.Config.Logger.Error("Falha ao criar server manager", err)
-		os.Exit(1)
+		return
 	}
 
 	serverManager.StartEventProcessors(ctx)
 
 	if err := serverManager.Start(); err != nil {
 		app.Config.Logger.Error("Erro na execução do servidor", err)
-		os.Exit(1)
+		return
 	}
 }

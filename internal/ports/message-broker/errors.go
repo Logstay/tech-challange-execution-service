@@ -1,7 +1,7 @@
 package messagebroker
 
-type InvalidConfiguration string
+type InvalidConfigurationError string
 
-func (err InvalidConfiguration) Error() string {
-	return string(err)
+func (e InvalidConfigurationError) Error() string {
+	return string(e)
 }

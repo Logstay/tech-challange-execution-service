@@ -275,11 +275,3 @@ func (h *Handler) sendToRetryQueue(ctx context.Context, message mPorts.Message, 
 	h.log.Info("Message sent to retry queue")
 	span.AddEvent("retry-queue-send-success", nil)
 }
-
-func (h *Handler) GetMetrics() map[string]int64 {
-	return map[string]int64{
-		"processed": h.processedCount.Load(),
-		"failed":    h.failedCount.Load(),
-		"retried":   h.retriedCount.Load(),
-	}
-}
