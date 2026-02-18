@@ -90,8 +90,8 @@ jobs:
           echo "� Using namespace: $NAMESPACE"
 
           # Ensure namespace exists (should already exist from database deployment)
-          echo "� Ensuring namespace exists..."
-          kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
+          echo "📋 Ensuring namespace exists..."
+          kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply --validate=false -f -
 
           # Debug kubectl access before deployment
           echo "🔍 Testing kubectl access..."
