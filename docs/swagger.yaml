@@ -1,0 +1,548 @@
+basePath: /v1
+definitions:
+  http.ErrorResponse:
+    properties:
+      code:
+        example: 400
+        type: integer
+      error:
+        example: invalid request
+        type: string
+    type: object
+  http.GetConsumableResponse:
+    properties:
+      code:
+        example: KIT-001
+        type: string
+      created_at:
+        example: "2024-01-01T12:00:00Z"
+        type: string
+      description:
+        example: kit de embreagem completo para carros de passeio
+        type: string
+      name:
+        example: Kit Embreagem
+        type: string
+      price:
+        example: 100
+        type: number
+      quantity:
+        example: 100
+        type: integer
+      uid:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      updated_at:
+        example: "2024-01-01T12:00:00Z"
+        type: string
+    type: object
+  http.GetServiceDefinitionResponse:
+    properties:
+      created_at:
+        example: "2024-01-01T12:00:00Z"
+        type: string
+      description:
+        example: Serviço de limpeza completa
+        type: string
+      name:
+        example: Limpeza Geral
+        type: string
+      price:
+        example: 150
+        type: number
+      uid:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      updated_at:
+        example: "2024-01-01T12:00:00Z"
+        type: string
+    type: object
+  http.MessageResponse:
+    properties:
+      message:
+        example: Operation completed successfully
+        type: string
+    type: object
+  http.PaginatedResponse:
+    properties:
+      data: {}
+      limit:
+        example: 10
+        type: integer
+      page:
+        example: 1
+        type: integer
+      total:
+        example: 100
+        type: integer
+    type: object
+  http.SaveConsumableRequest:
+    properties:
+      code:
+        example: KIT-001
+        type: string
+      description:
+        example: kit de embreagem completo para carros de passeio
+        type: string
+      name:
+        example: Kit Embreagem
+        type: string
+      price:
+        example: 100
+        type: number
+      quantity:
+        example: 100
+        type: integer
+    required:
+    - code
+    - name
+    - price
+    - quantity
+    type: object
+  http.SaveServiceDefinitionRequest:
+    properties:
+      description:
+        example: Serviço de limpeza completa
+        type: string
+      name:
+        example: Limpeza Geral
+        type: string
+      price:
+        example: 150
+        type: number
+    required:
+    - name
+    - price
+    type: object
+  http.UpdateConsumableRequest:
+    properties:
+      description:
+        example: kit de embreagem completo para carros de passeio
+        type: string
+      name:
+        example: Kit Embreagem Premium
+        type: string
+      price:
+        example: 150
+        type: number
+    required:
+    - name
+    - price
+    type: object
+  http.UpdateServiceDefinitionRequest:
+    properties:
+      description:
+        example: Serviço de limpeza completa premium
+        type: string
+      name:
+        example: Limpeza Geral Premium
+        type: string
+      price:
+        example: 200
+        type: number
+    required:
+    - name
+    - price
+    type: object
+info:
+  contact:
+    email: kaiquepng@gmail.com
+    name: Kaique Moreira
+    url: https://github.com/Logstay/tech-challange-execution-service
+  description: "Microsserviço de estoque e catálogo de serviços do Tech Challenge
+    - Fase 4 do 12SOAT FIAP.\n\n## \U0001F680 Funcionalidades\n- **Consumíveis**:
+    CRUD completo de peças e itens de estoque\n- **Definições de Serviço**: Catálogo
+    de serviços disponíveis com precificação\n- **Integração via Eventos**: Consumo
+    de eventos Kafka para atualização de estoque"
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+  title: Tech Challenge - ExecutionService
+  version: 1.0.0
+paths:
+  /consumables:
+    get:
+      description: Retorna uma lista paginada de consumíveis
+      parameters:
+      - default: 0
+        description: Número da página
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Itens por página
+        in: query
+        name: limit
+        type: integer
+      - description: Filtrar por nome
+        in: query
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.PaginatedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar consumíveis
+      tags:
+      - Consumíveis
+    post:
+      consumes:
+      - application/json
+      description: Cria um novo consumível no estoque
+      parameters:
+      - description: Dados do consumível
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.SaveConsumableRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar consumível
+      tags:
+      - Consumíveis
+  /consumables/{uid}:
+    delete:
+      description: Remove um consumível pelo seu identificador único
+      parameters:
+      - description: UID do consumível
+        in: path
+        name: uid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.MessageResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Deletar consumível
+      tags:
+      - Consumíveis
+    get:
+      description: Retorna um consumível pelo seu identificador único
+      parameters:
+      - description: UID do consumível
+        in: path
+        name: uid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.GetConsumableResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Buscar consumível por UID
+      tags:
+      - Consumíveis
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de um consumível existente
+      parameters:
+      - description: UID do consumível
+        in: path
+        name: uid
+        required: true
+        type: string
+      - description: Dados para atualização
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateConsumableRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar consumível
+      tags:
+      - Consumíveis
+  /health:
+    get:
+      description: Verifica o status de saúde do serviço de cobrança
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Serviço funcionando corretamente
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: "\U0001F3E5 Health Check"
+      tags:
+      - "\U0001F527 Sistema"
+  /service-definitions:
+    get:
+      description: Retorna uma lista paginada de definições de serviço
+      parameters:
+      - default: 0
+        description: Número da página
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Itens por página
+        in: query
+        name: limit
+        type: integer
+      - description: Filtrar por nome
+        in: query
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.PaginatedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar definições de serviço
+      tags:
+      - Definições de Serviço
+    post:
+      consumes:
+      - application/json
+      description: Cria uma nova definição de serviço
+      parameters:
+      - description: Dados da definição de serviço
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.SaveServiceDefinitionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar definição de serviço
+      tags:
+      - Definições de Serviço
+  /service-definitions/{uid}:
+    delete:
+      description: Remove uma definição de serviço pelo seu identificador único
+      parameters:
+      - description: UID da definição de serviço
+        in: path
+        name: uid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.MessageResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Deletar definição de serviço
+      tags:
+      - Definições de Serviço
+    get:
+      description: Retorna uma definição de serviço pelo seu identificador único
+      parameters:
+      - description: UID da definição de serviço
+        in: path
+        name: uid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.GetServiceDefinitionResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Buscar definição de serviço por UID
+      tags:
+      - Definições de Serviço
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de uma definição de serviço existente
+      parameters:
+      - description: UID da definição de serviço
+        in: path
+        name: uid
+        required: true
+        type: string
+      - description: Dados para atualização
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateServiceDefinitionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar definição de serviço
+      tags:
+      - Definições de Serviço
+securityDefinitions:
+  BearerAuth:
+    description: 'Digite apenas o token JWT (sem ''Bearer ''). Exemplo: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

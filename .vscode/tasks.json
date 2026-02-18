@@ -1,0 +1,267 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "start-dependencies",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "compose",
+        "-f",
+        "tech-challange-execution-service/configs/local/docker-compose.yaml",
+        "up",
+        "-d",
+        "db",
+        "jaeger"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "options": {
+        "statusbar": {
+          "hide": false
+        }
+      },
+      "problemMatcher": [],
+      "detail": "🐳 Inicia banco PostgreSQL e Jaeger para desenvolvimento"
+    },
+    {
+      "label": "run-migrations",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "migrate"
+      ],
+      "group": "build",
+      "dependsOn": "start-dependencies",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "🔄 Executa migrações Flyway no banco de dados"
+    },
+    {
+      "label": "build-api",
+      "type": "shell",
+      "command": "go",
+      "args": [
+        "build",
+        "-o",
+        "bin/app",
+        "cmd/main.go"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "silent",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [
+        "$go"
+      ],
+      "detail": "🔨 Compila a aplicação Go"
+    },
+    {
+      "label": "test-all",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "test"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared"
+      },
+      "problemMatcher": [
+        "$go"
+      ],
+      "detail": "🧪 Executa todos os testes com cobertura"
+    },
+    {
+      "label": "lint-check",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "check"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared"
+      },
+      "problemMatcher": [
+        "$go"
+      ],
+      "detail": "🔍 Executa análise de lint (golangci-lint)"
+    },
+    {
+      "label": "swagger-generate",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "swag"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "📚 Regenera documentação Swagger/OpenAPI"
+    },
+    {
+      "label": "docker-up",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "up"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "🐳 Sobe toda a infraestrutura (app + banco + jaeger + sonar)"
+    },
+    {
+      "label": "docker-down",
+      "type": "shell",
+      "command": "make",
+      "args": [
+        "down"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "🛑 Para todos os containers Docker"
+    },
+    {
+      "label": "clean-build",
+      "type": "shell",
+      "command": "rm",
+      "args": [
+        "-rf",
+        "bin/",
+        "coverage.out"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "silent",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "🧹 Limpa arquivos de build e cobertura"
+    },
+    {
+      "label": "docker-logs-backend",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "logs",
+        "-f",
+        "tech-challange-execution-service"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "📋 Visualiza logs do container backend"
+    },
+    {
+      "label": "docker-logs-db",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "logs",
+        "-f",
+        "db"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "📋 Visualiza logs do container PostgreSQL"
+    },
+    {
+      "label": "docker-rebuild",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "compose",
+        "-f",
+        "configs/local/docker-compose.yaml",
+        "up",
+        "--build",
+        "--force-recreate",
+        "-d"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "🔄 Reconstrói e reinicia todos os containers"
+    },
+    {
+      "label": "check-db-connection",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "exec",
+        "db",
+        "pg_isready",
+        "-U",
+        "techmaster",
+        "-d",
+        "tech_challenge_db"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "🔍 Testa conexão com banco de dados"
+    }
+  ]
+}

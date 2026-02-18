@@ -1,0 +1,7 @@
+# Values override para ambiente de produção com API Gateway
+# Use este arquivo ao fazer deploy no EKS quando usar API Gateway
+# Comando: helm upgrade tech-challenge-prod . -f values-prod-api-gateway.yaml -n core-prod
+
+app:
+  env:
+    SWAGGER_BASE_PATH: "/Prod/v1"  # API Gateway stage + base path
