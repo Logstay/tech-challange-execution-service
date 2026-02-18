@@ -13,7 +13,6 @@ require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/lib/pq v1.11.2
 	github.com/matoous/go-nanoid v1.5.1
-	github.com/mercadopago/sdk-go v1.8.0
 	github.com/newrelic/go-agent/v3 v3.42.0
 	github.com/newrelic/go-agent/v3/integrations/nrgin v1.4.2
 	github.com/oklog/run v1.2.0
