@@ -8,7 +8,7 @@ down:
 	@cd config/local && docker compose down
 
 build:
-	@CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags -a -installsuffix cgo cmd/main.go
+	@CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags -a -installsuffix cgo cmd/main.go
 
 migrate:
 	@docker run --rm -ti \
