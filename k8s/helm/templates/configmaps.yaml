@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: app-config
+  name: execution-service-config
   {{- if .Values.global.namespace }}
   namespace: {{ .Values.global.namespace }}
   {{- end }}
