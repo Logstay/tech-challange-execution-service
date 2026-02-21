@@ -35,6 +35,22 @@ func NewServerManager(ctx context.Context, app *Application) (*ServerManager, er
 	return sm, nil
 }
 
+func (sm *ServerManager) Start() error {
+	sm.app.Config.Logger.Info("Servidor iniciado e pronto para receber requisições")
+	return sm.servers.Run()
+}
+
+func (sm *ServerManager) StartEventProcessors(ctx context.Context) {
+	factory := app.NewServiceBuilder(sm.app.DB, sm.app.TracingProvider, sm.app.Config, sm.app.Cache)
+
+	sm.app.Config.Logger.Info("Iniciando processadores de eventos...")
+	go func() {
+		if err := factory.StartEvent(ctx); err != nil {
+			sm.app.Config.Logger.Error("Erro no processador de eventos de billing", err)
+		}
+	}()
+}
+
 func (sm *ServerManager) setupHTTPServer() {
 
 	sm.serverHTTP = handler.NewServer(
@@ -95,20 +111,4 @@ func (sm *ServerManager) waitForShutdownSignal() error {
 	sm.app.Config.Logger.Info(fmt.Sprintf("Sinal %v recebido, iniciando shutdown...", sig))
 
 	return nil
-}
-
-func (sm *ServerManager) Start() error {
-	sm.app.Config.Logger.Info("Servidor iniciado e pronto para receber requisições")
-	return sm.servers.Run()
-}
-
-func (sm *ServerManager) StartEventProcessors(ctx context.Context) {
-	factory := app.NewServiceBuilder(sm.app.DB, sm.app.TracingProvider, sm.app.Config, sm.app.Cache)
-
-	sm.app.Config.Logger.Info("Iniciando processadores de eventos...")
-	go func() {
-		if err := factory.StartEvent(ctx); err != nil {
-			sm.app.Config.Logger.Error("Erro no processador de eventos de billing", err)
-		}
-	}()
 }

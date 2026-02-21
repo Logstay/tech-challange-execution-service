@@ -18,8 +18,8 @@ type Producer interface {
 }
 
 type Message struct {
-	ChannelID string
-	Headers   map[string]string
-	Value     any
-	Error     string
+	ChannelID string            `json:"channel_id"`
+	Headers   map[string]string `json:"headers"`
+	Value     any               `json:"value"`
+	Error     string            `json:"error,omitempty"`
 }

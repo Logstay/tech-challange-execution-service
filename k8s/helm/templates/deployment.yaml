@@ -33,32 +33,32 @@ spec:
         - name: DB_HOST
           valueFrom:
             configMapKeyRef:
-              name: app-config
+              name: execution-service-config
               key: DB_HOST
         - name: DB_PORT
           valueFrom:
             configMapKeyRef:
-              name: app-config
+              name: execution-service-config
               key: DB_PORT
         - name: DB_NAME
           valueFrom:
             configMapKeyRef:
-              name: app-config
+              name: execution-service-config
               key: DB_NAME
         - name: DB_USER
           valueFrom:
             configMapKeyRef:
-              name: app-config
+              name: execution-service-config
               key: DB_USER
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: app-secret
+              name: execution-service-secret
               key: DB_PASSWORD
         - name: DB_SSLMODE
           valueFrom:
             configMapKeyRef:
-              name: app-config
+              name: execution-service-config
               key: DB_SSLMODE
         - name: POOL_MIN
           value: "{{ .Values.app.database.pool_min | default 1 }}"
@@ -73,70 +73,70 @@ spec:
         - name: SWAGGER_BASE_PATH
           valueFrom:
             configMapKeyRef:
-              name: app-config
+              name: execution-service-config
               key: SWAGGER_BASE_PATH
 
         # JWT Configuration
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:
-              name: app-secret
+              name: execution-service-secret
               key: JWT_SECRET
 
         # Kafka Configuration (execution-service specific)
         - name: KAFKA_PRODUCER_HOSTS
           valueFrom:
             configMapKeyRef:
-              name: app-config
+              name: execution-service-config
               key: KAFKA_PRODUCER_HOSTS
         - name: KAFKA_CONSUMER_HOSTS
           valueFrom:
             configMapKeyRef:
-              name: app-config
+              name: execution-service-config
               key: KAFKA_CONSUMER_HOSTS
         - name: KAFKA_USERNAME
           valueFrom:
             configMapKeyRef:
-              name: app-config
+              name: execution-service-config
               key: KAFKA_USERNAME
         - name: KAFKA_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: app-secret
+              name: execution-service-secret
               key: KAFKA_PASSWORD
 
         # Tracing Configuration
         - name: TRACING_SERVICE_VERSION
           valueFrom:
             configMapKeyRef:
-              name: app-config
+              name: execution-service-config
               key: TRACING_SERVICE_VERSION
         - name: TRACING_SERVICE_NAME
           valueFrom:
             configMapKeyRef:
-              name: app-config
+              name: execution-service-config
               key: TRACING_SERVICE_NAME
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
           valueFrom:
             configMapKeyRef:
-              name: app-config
+              name: execution-service-config
               key: OTEL_EXPORTER_OTLP_ENDPOINT
         - name: OTEL_METRICS_EXPORT
           valueFrom:
             configMapKeyRef:
-              name: app-config
+              name: execution-service-config
               key: OTEL_METRICS_EXPORT
 
         # New Relic Configuration (Optional)
         - name: NEW_RELIC_APP_NAME
           valueFrom:
             configMapKeyRef:
-              name: app-config
+              name: execution-service-config
               key: NEW_RELIC_APP_NAME
         - name: NEW_RELIC_LICENSE_KEY
           valueFrom:
             secretKeyRef:
-              name: app-secret
+              name: execution-service-secret
               key: NEW_RELIC_LICENSE_KEY
 
         readinessProbe:

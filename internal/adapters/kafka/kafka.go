@@ -57,15 +57,15 @@ func New(config Config, logger logger.Logger) (k *Kafka, err error) {
 func validateConfig(config Config) error {
 
 	if config.ProducerHosts == "" {
-		return ports.InvalidConfiguration("producer hosts cannot be empty")
+		return ports.InvalidConfigurationError("producer hosts cannot be empty")
 	}
 
 	if config.ConsumerHosts == "" {
-		return ports.InvalidConfiguration("consumer hosts cannot be empty")
+		return ports.InvalidConfigurationError("consumer hosts cannot be empty")
 	}
 
 	if config.Username != "" && config.Password == "" {
-		return ports.InvalidConfiguration("password is required when username is provided")
+		return ports.InvalidConfigurationError("password is required when username is provided")
 	}
 
 	return nil
@@ -98,6 +98,7 @@ func (k Kafka) NewConsumer(groupID string) (ports.Consumer, error) {
 
 	c := &Consumer{
 		config: k.buildConsumerConfig(groupID),
+		logger: k.logger,
 	}
 
 	if err = c.build(); err != nil {

@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -80,11 +81,11 @@ func (p Producer) Produce(ctx context.Context, channelID string, message ports.M
 		})
 		return ctx.Err()
 	case <-time.After(30 * time.Second):
-		p.logger.Error("Timeout waiting for delivery confirmation", fmt.Errorf("timeout after 30s"), map[string]any{
+		p.logger.Error("Timeout waiting for delivery confirmation", errors.New("timeout after 30s"), map[string]any{
 			"topic": channelID,
 			"key":   key,
 		})
-		return fmt.Errorf("timeout waiting for message delivery confirmation")
+		return errors.New("timeout waiting for message delivery confirmation")
 	}
 
 	return nil

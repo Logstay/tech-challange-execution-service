@@ -3,10 +3,11 @@ package kafka
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"time"
 
 	ports "github.com/Logstay/tech-challange-execution-service/internal/ports/message-broker"
+	"github.com/Logstay/tech-challange-execution-service/pkg/logger"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 )
 
@@ -16,6 +17,7 @@ type Consumer struct {
 	config *kafka.ConfigMap
 
 	channelIDs []string
+	logger     logger.Logger
 }
 
 func (c *Consumer) Consume(ctx context.Context, channelIDs ...string) (channel <-chan ports.Message, err error) {
@@ -48,6 +50,7 @@ func (c *Consumer) Consume(ctx context.Context, channelIDs ...string) (channel <
 					select {
 					case ch <- message:
 						if _, commitErr := c.CommitMessage(kafkaMessage); commitErr != nil {
+							c.logger.Error("Failed to commit message", commitErr)
 						}
 					case <-ctx.Done():
 						return
@@ -55,23 +58,7 @@ func (c *Consumer) Consume(ctx context.Context, channelIDs ...string) (channel <
 					continue
 				}
 
-				if kafkaErr, ok := readErr.(kafka.Error); ok {
-					if kafkaErr.IsFatal() {
-
-						if recoverErr := c.recover(); recoverErr != nil {
-							return
-						}
-
-					} else if !kafkaErr.IsTimeout() {
-
-						time.Sleep(5 * time.Second)
-					}
-
-				} else {
-
-					time.Sleep(5 * time.Second)
-
-				}
+				c.handleReadError(readErr)
 			}
 		}
 	}()
@@ -80,30 +67,47 @@ func (c *Consumer) Consume(ctx context.Context, channelIDs ...string) (channel <
 }
 
 func (c *Consumer) Close() {
-	c.Consumer.Close()
+	if closeErr := c.Consumer.Close(); closeErr != nil {
+		c.logger.Error("Failed to close consumer", closeErr)
+	}
 }
 
 func (c *Consumer) subscribe() error {
 	return c.SubscribeTopics(c.channelIDs, nil)
 }
 
-func (c *Consumer) recover() error {
+func (c *Consumer) handleReadError(readErr error) {
+	var kafkaErr kafka.Error
+	if !errors.As(readErr, &kafkaErr) {
+		time.Sleep(5 * time.Second)
+		return
+	}
 
-	for _, backoff := range []time.Duration{5, 15, 30} {
-		time.Sleep(backoff * time.Second)
+	if kafkaErr.IsFatal() {
+		if recoverErr := c.recover(); recoverErr != nil {
+			return
+		}
+	} else if !kafkaErr.IsTimeout() {
+		time.Sleep(5 * time.Second)
+	}
+}
+
+func (c *Consumer) recover() error {
+	for _, backoff := range []time.Duration{5 * time.Second, 15 * time.Second, 30 * time.Second} {
+		time.Sleep(backoff)
 
 		if c.Consumer != nil {
-			c.Consumer.Close()
+			if closeErr := c.Consumer.Close(); closeErr != nil {
+				c.logger.Error("Failed to close consumer during recovery", closeErr)
+			}
 		}
 
 		if err := c.build(); err == nil {
 			return nil
-		} else {
-			continue
 		}
 	}
 
-	return fmt.Errorf("failed to recover kafka consumer after 3 attempts")
+	return errors.New("failed to recover kafka consumer after 3 attempts")
 }
 
 func (c *Consumer) build() (err error) {
@@ -112,7 +116,9 @@ func (c *Consumer) build() (err error) {
 	}
 
 	if len(c.channelIDs) > 0 {
-		c.subscribe()
+		if subErr := c.subscribe(); subErr != nil {
+			c.logger.Error("Failed to subscribe to channels", subErr)
+		}
 	}
 
 	return

@@ -67,12 +67,11 @@ func LoadConfig() (*Config, error) {
 	return cfg, nil
 }
 
-func (c *Config) initLogger() error {
+func (c *Config) initLogger() {
 	baseLogger := logrus.New()
 	baseLogger.SetFormatter(&logrus.JSONFormatter{})
 	baseLogger.SetOutput(os.Stdout)
 	baseLogger.SetLevel(logrus.InfoLevel)
 
 	c.Logger = logger.NewLogger(c.Tracer.ServiceName, baseLogger)
-	return nil
 }

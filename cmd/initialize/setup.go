@@ -2,6 +2,7 @@ package initialize
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/Logstay/tech-challange-execution-service/config"
@@ -47,9 +48,7 @@ func Setup(ctx context.Context) (*Application, error) {
 		return nil, fmt.Errorf("falha ao inicializar banco de dados: %w", err)
 	}
 
-	if err := appInstance.initCache(); err != nil {
-		return nil, fmt.Errorf("falha ao inicializar cache: %w", err)
-	}
+	appInstance.initCache()
 
 	appInstance.prepareContext()
 
@@ -58,6 +57,27 @@ func Setup(ctx context.Context) (*Application, error) {
 	appInstance.Config.Logger.Info("Bootstrap concluído com sucesso")
 
 	return appInstance, nil
+}
+
+func (a *Application) Shutdown(ctx context.Context) error {
+	a.Config.Logger.Info("Iniciando shutdown da aplicação...")
+
+	if a.TracingProvider != nil {
+		a.TracingProvider.Close(ctx)
+	}
+
+	if a.Cache != nil {
+		a.Cache.Close()
+	}
+
+	if a.DB != nil {
+		if err := a.DB.Close(); err != nil {
+			a.Config.Logger.Error("Failed to close database connection", err)
+		}
+	}
+
+	a.Config.Logger.Info("Shutdown concluído")
+	return nil
 }
 
 func (a *Application) loadConfig() error {
@@ -71,7 +91,7 @@ func (a *Application) loadConfig() error {
 
 func (a *Application) initNewRelic() error {
 	if a.Config.NewRelic.LicenseKey == "" {
-		return fmt.Errorf("New Relic license key não configurada")
+		return errors.New("new Relic license key não configurada")
 	}
 
 	nrApp, err := newrelic.NewApplication(
@@ -97,9 +117,8 @@ func (a *Application) initTracing() error {
 	return nil
 }
 
-func (a *Application) initCache() error {
+func (a *Application) initCache() {
 	a.Cache = cache.NewMemoryCache()
-	return nil
 }
 
 func (a *Application) initDatabase() error {
@@ -123,23 +142,4 @@ func (a *Application) initServiceFactory() {
 		panic(err)
 	}
 	a.ServiceFactory = factory
-}
-
-func (a *Application) Shutdown(ctx context.Context) error {
-	a.Config.Logger.Info("Iniciando shutdown da aplicação...")
-
-	if a.TracingProvider != nil {
-		a.TracingProvider.Close(ctx)
-	}
-
-	if a.Cache != nil {
-		a.Cache.Close()
-	}
-
-	if a.DB != nil {
-		a.DB.Close()
-	}
-
-	a.Config.Logger.Info("Shutdown concluído")
-	return nil
 }

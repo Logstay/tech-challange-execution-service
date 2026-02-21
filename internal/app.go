@@ -10,7 +10,8 @@ import (
 	servicedefinitiondao "github.com/Logstay/tech-challange-execution-service/internal/adapters/postgres/servicedefinition"
 	consumableservice "github.com/Logstay/tech-challange-execution-service/internal/application/consumable"
 	servicedefinitionservice "github.com/Logstay/tech-challange-execution-service/internal/application/servicedefinition"
-	eventdecrease "github.com/Logstay/tech-challange-execution-service/internal/domain/inventory/events/decrease"
+	eventdecrease "github.com/Logstay/tech-challange-execution-service/internal/events/decrease"
+	eventincrease "github.com/Logstay/tech-challange-execution-service/internal/events/increase"
 	cPorts "github.com/Logstay/tech-challange-execution-service/internal/ports/cache"
 	database "github.com/Logstay/tech-challange-execution-service/pkg/postgres"
 	"github.com/Logstay/tech-challange-execution-service/pkg/tracing"
@@ -88,9 +89,20 @@ func (b *ServiceBuilder) StartEvent(ctx context.Context) error {
 		return err
 	}
 
+	increaseInventoryEvent, err := eventincrease.New(broker, b.tracer, b.cfg.Logger, inventoryDAO, consumableDAO)
+	if err != nil {
+		return err
+	}
+
 	go func() {
 		if err := decreaseInventoryEvent.Handle(ctx); err != nil {
 			b.cfg.Logger.Error("Error starting decrease inventory event processor", err)
+		}
+	}()
+
+	go func() {
+		if err := increaseInventoryEvent.Handle(ctx); err != nil {
+			b.cfg.Logger.Error("Error starting increase inventory event processor", err)
 		}
 	}()
 

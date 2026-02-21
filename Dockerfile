@@ -1,14 +1,19 @@
-FROM golang:1.24-alpine AS builder
+FROM golang:1.24-bookworm AS builder
 
-RUN apk add --no-cache git
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends ca-certificates build-essential \
+  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY . .
 
-RUN go build -o app ./cmd/main.go
+RUN CGO_ENABLED=1 go build --trimpath -ldflags="-s -w" -o app ./cmd/.
 
-FROM alpine:3.22.1
+FROM debian:bookworm-slim
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=builder /app/app .
-EXPOSE 8080
+EXPOSE 8083
 CMD ["./app"]
