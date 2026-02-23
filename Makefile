@@ -53,5 +53,8 @@ clean:
 	@rm -rf bin/ coverage.out .scannerwork/
 	@docker system prune -f
 
-.PHONY: check test swag up up-build down restart dev-run status clean help \
+.PHONY: check test unit_test swag up up-build down restart dev-run status clean help \
 	infra-local infra-prod infra-destroy-local infra-destroy-prod
+
+test:
+	$(MAKE) unit_test
